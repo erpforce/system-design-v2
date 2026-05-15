@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #F4F5F6;
+    color: #1F2125;
+    letter-spacing: -0.02em;
+    padding: 16px;
+  }
+  svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+  button { font-family: inherit; cursor: pointer; }
+
+  .frame {
+    background: #fff;
+    border: 1px solid #ECEDEF;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(15,17,21,0.03);
+  }
+
+  /* ─── Header toolbar (title row + view selector + actions) ─── */
+  .head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #ECEDEF;
+    flex-wrap: wrap;
+  }
+  .head .ptitle {
+    font-size: 18px; font-weight: 600; color: #1F2125;
+    letter-spacing: -0.03em;
+    padding-right: 10px;
+  }
+  .view-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    height: 32px; padding: 0 12px;
+    border: none; background: transparent;
+    font-size: 13px; font-weight: 500;
+  }
+  .view-pill.active { color: #2EB273; }
+  .view-pill:not(.active) { color: #656669; }
+  .view-pill:not(.active):hover { color: #1F2125; }
+  .view-pill svg { width: 14px; height: 14px; stroke-width: 1.8; }
+  .vp-divider { width: 1px; height: 18px; background: #ECEDEF; }
+  .view-add {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 32px; padding: 0 10px;
+    background: transparent; border: none;
+    color: #4A4C50; font-size: 13px; font-weight: 500;
+  }
+  .view-add:hover { color: #1F2125; }
+  .view-add svg { width: 12px; height: 12px; stroke-width: 2.2; }
+  .head-spacer { flex: 1; }
+  .search {
+    height: 32px; width: 220px;
+    background: #F5F6F7; border: 1px solid transparent;
+    border-radius: 6px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 12px;
+  }
+  .search:focus-within { background: #fff; border-color: #2EB273; }
+  .search svg { color: #9EA0A3; width: 13px; height: 13px; }
+  .search input {
+    border: none; outline: none; background: transparent;
+    font-family: inherit; font-size: 12.5px; color: #1F2125;
+    flex: 1; min-width: 0;
+  }
+  .search input::placeholder { color: #9EA0A3; }
+  .btn {
+    height: 32px; padding: 0 12px;
+    border-radius: 6px; border: 1px solid #E0E2E4;
+    background: #fff;
+    font-size: 12.5px; font-weight: 500; color: #1F2125;
+    display: inline-flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+  }
+  .btn:hover { background: #FAFBFB; }
+  .btn svg { width: 12px; height: 12px; color: #4A4C50; stroke-width: 1.8; }
+  .btn-primary { background: #2EB273; border-color: #2EB273; color: #fff; }
+  .btn-primary:hover { background: #29A068; }
+  .btn-primary svg { color: #fff; stroke-width: 2.4; }
+  .icon-only {
+    width: 32px; height: 32px; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 6px; border: 1px solid #E0E2E4; background: #fff;
+    color: #4A4C50;
+  }
+  .icon-only:hover { background: #FAFBFB; color: #1F2125; }
+  .icon-only svg { width: 14px; height: 14px; stroke-width: 1.8; }
+
+  /* ─── Filter chip row ─── */
+  .filter-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #ECEDEF;
+    background: #FAFBFB;
+    flex-wrap: wrap;
+  }
+  .filter-row .lbl { font-size: 12px; font-weight: 500; color: #4A4C50; }
+  .fchip {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 26px; padding: 0 4px 0 0;
+    background: #fff;
+    border: 1px solid #E0E2E4;
+    border-radius: 13px;
+    font-size: 11.5px;
+  }
+  .fchip-x {
+    width: 22px; height: 22px; margin-left: 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: none; background: transparent;
+    color: #8E8E93; border-radius: 50%;
+  }
+  .fchip-x:hover { background: #F2F3F4; color: #1F2125; }
+  .fchip-x svg { width: 9px; height: 9px; stroke-width: 2.4; }
+  .fchip-k { color: #4A4C50; font-weight: 500; }
+  .fchip-sep { color: #C8CACC; }
+  .fchip-v { color: #1A8A56; font-weight: 500; padding-right: 8px; }
+  .fr-spacer { flex: 1; }
+  .link-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 26px; padding: 0 8px;
+    border: none; background: transparent;
+    font-size: 12px; font-weight: 500; color: #2EB273;
+    border-radius: 4px;
+  }
+  .link-btn:hover { background: #EBF9F2; }
+  .link-btn.muted { color: #656669; }
+  .link-btn.muted:hover { background: #F2F3F4; color: #1F2125; }
+  .link-btn svg { width: 12px; height: 12px; stroke-width: 1.8; }
+
+  /* ─── Table ─── */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+  }
+  thead th {
+    height: 40px;
+    background: #FAFBFB;
+    border-bottom: 1px solid #ECEDEF;
+    text-align: left;
+    padding: 0 14px;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #4A4C50;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    user-select: none;
+  }
+  thead th .th-inner {
+    width: 100%;
+    display: inline-flex; align-items: center; justify-content: space-between; gap: 6px;
+    cursor: pointer;
+  }
+  .sort {
+    display: inline-flex; flex-direction: column; gap: 1px;
+    color: #C8CACC; line-height: 0;
+  }
+  .sort svg { width: 7px; height: 4px; stroke-width: 2.2; }
+  .sort .active { color: #2EB273; }
+
+  th.col-reorder, td.col-reorder { width: 36px; padding: 0; text-align: center; }
+  .reorder-btn, .row-kebab {
+    width: 22px; height: 22px;
+    border-radius: 4px; border: none;
+    background: transparent; color: #B0B2B4;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .reorder-btn:hover, .row-kebab:hover { background: #F2F3F4; color: #4A4C50; }
+  .row-kebab.open { background: #E8F6EE; color: #1A8A56; }
+  .reorder-btn svg, .row-kebab svg { width: 13px; height: 13px; stroke-width: 1.8; }
+
+  /* ─── Row-actions popover ─── */
+  td.col-reorder { position: relative; overflow: visible; }
+  .row-menu {
+    position: absolute;
+    top: 30px; left: 28px;
+    z-index: 30;
+    width: 188px;
+    background: #fff;
+    border: 1px solid #ECEDEF;
+    border-radius: 8px;
+    box-shadow: 0 12px 32px -8px rgba(15,17,21,0.18), 0 2px 6px rgba(15,17,21,0.06);
+    padding: 5px;
+    font-size: 12.5px;
+  }
+  .row-menu::before {
+    content: '';
+    position: absolute;
+    top: -5px; left: 12px;
+    width: 9px; height: 9px;
+    background: #fff;
+    border-left: 1px solid #ECEDEF;
+    border-top: 1px solid #ECEDEF;
+    transform: rotate(45deg);
+  }
+  .rm-item {
+    width: 100%;
+    display: flex; align-items: center; gap: 10px;
+    height: 30px; padding: 0 10px;
+    border: none; border-radius: 5px; background: transparent;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: #1F2125;
+    text-align: left;
+  }
+  .rm-item:hover { background: #F5F6F7; }
+  .rm-item svg { width: 14px; height: 14px; color: #656669; stroke-width: 1.8; flex-shrink: 0; }
+  .rm-item .kbd {
+    margin-left: auto;
+    font-size: 10.5px; color: #9EA0A3;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.02em;
+  }
+  .rm-divider { height: 1px; background: #F2F3F4; margin: 4px 4px; }
+  .rm-item.danger { color: #B7333E; }
+  .rm-item.danger svg { color: #B7333E; }
+  .rm-item.danger:hover { background: #FBE3E5; }
+  th.col-check, td.col-check { width: 40px; padding: 0 0 0 6px; }
+  th.col-kebab, td.col-kebab { width: 38px; padding: 0; text-align: center; }
+
+  .cb {
+    width: 14px; height: 14px;
+    border: 1.5px solid #C8CACC;
+    border-radius: 3px;
+    display: inline-block;
+    background: #fff;
+    vertical-align: middle;
+  }
+  .cb.checked {
+    background: #2EB273; border-color: #2EB273; position: relative;
+  }
+  .cb.checked::after {
+    content: ''; position: absolute;
+    left: 3px; top: 1px;
+    width: 4px; height: 7px;
+    border: solid #fff; border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg);
+  }
+
+  tbody td {
+    height: 44px;
+    padding: 0 14px;
+    border-bottom: 1px solid #F2F3F4;
+    color: #1F2125;
+    white-space: nowrap;
+  }
+  tbody tr:hover td { background: #FAFBFB; }
+  tbody tr:last-child td { border-bottom: none; }
+  .id-link {
+    color: #2EB273;
+    text-decoration: none;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .id-link:hover { text-decoration: underline; }
+  .muted { color: #656669; }
+  .amount { font-variant-numeric: tabular-nums; font-weight: 500; }
+
+  .pill {
+    display: inline-flex; align-items: center;
+    height: 22px; padding: 0 10px;
+    border-radius: 4px;
+    font-size: 11px; font-weight: 500;
+  }
+  .pill.approved, .pill.paid { background: #DFF4E9; color: #1A8A56; }
+  .pill.pending { background: #F2F3F4; color: #656669; }
+  .pill.draft { background: #E6EEF9; color: #2A6FDB; }
+  .pill.rejected { background: #FBE3E5; color: #B7333E; }
+
+  /* ─── Footer toolbar ─── */
+  .footer {
+    display: flex; align-items: center;
+    padding: 10px 14px;
+    gap: 8px;
+    font-size: 12px;
+    color: #4A4C50;
+    border-top: 1px solid #ECEDEF;
+    background: #FAFBFB;
+    flex-wrap: wrap;
+  }
+  .ft-icon {
+    width: 28px; height: 28px;
+    border-radius: 5px; border: none; background: transparent;
+    color: #4A4C50;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .ft-icon:hover { background: #F2F3F4; color: #1F2125; }
+  .ft-icon svg { width: 14px; height: 14px; stroke-width: 1.8; }
+  .ft-select {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 28px; padding: 0 10px;
+    border: 1px solid #E0E2E4; border-radius: 5px;
+    background: #fff;
+    font-size: 12px; font-weight: 500; color: #1F2125;
+  }
+  .ft-select:hover { background: #FAFBFB; }
+  .ft-select svg { width: 10px; height: 10px; color: #8E8E93; stroke-width: 2; }
+  .ft-select.filter-active { color: #1A8A56; background: #EBF9F2; border-color: #C8E8D6; }
+  .ft-select.filter-active svg { color: #1A8A56; }
+  .ft-divider { width: 1px; height: 16px; background: #ECEDEF; }
+  .ft-add {
+    width: 28px; height: 28px;
+    border: 1px dashed #C8CACC; border-radius: 5px;
+    background: transparent; color: #656669;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .ft-add:hover { color: #2EB273; border-color: #2EB273; }
+  .ft-add svg { width: 11px; height: 11px; stroke-width: 2.2; }
+  .save-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 28px; padding: 0 12px;
+    border-radius: 5px; border: none;
+    background: #2EB273; color: #fff;
+    font-size: 12px; font-weight: 600;
+  }
+  .save-btn:hover { background: #29A068; }
+  .save-btn svg { width: 11px; height: 11px; stroke-width: 2; }
+  .pl { color: #656669; }
+  .ipp-row { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+  .per-page {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 24px; padding: 0 4px 0 8px;
+    border: 1px solid #E0E2E4; border-radius: 4px;
+    background: #fff; font-size: 12px; font-weight: 500; color: #1F2125;
+    cursor: pointer;
+  }
+  .per-page svg { width: 9px; height: 9px; color: #8E8E93; stroke-width: 2; }
+  .goto-input {
+    width: 56px; height: 24px;
+    padding: 0 8px;
+    border: 1px solid #E0E2E4; border-radius: 4px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 12px; color: #1F2125;
+    outline: none;
+  }
+  .goto-input:focus { border-color: #2EB273; }
+  .arrow-btn {
+    width: 24px; height: 24px; border-radius: 4px;
+    border: 1px solid #E0E2E4; background: #fff;
+    color: #4A4C50;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .arrow-btn:hover { background: #F2F3F4; color: #1F2125; }
+  .arrow-btn:disabled { color: #C8CACC; cursor: not-allowed; }
+  .arrow-btn svg { width: 11px; height: 11px; stroke-width: 2; }
+  .page-of { color: #1F2125; font-weight: 500; }
+  .page-of b { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="frame">
+
+  <!-- Header -->
+  <div class="head">
+    <span class="ptitle">Payment</span>
+    <button class="view-pill active">
+      <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="4" rx="1"/><rect x="3" y="11" width="18" height="4" rx="1"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
+      Table View
+    </button>
+    <button class="view-pill">
+      <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>
+      Grid View
+    </button>
+    <span class="vp-divider"></span>
+    <button class="view-add">
+      <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      View
+    </button>
+    <span class="head-spacer"></span>
+    <div class="search">
+      <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input placeholder="Search" />
+    </div>
+    <button class="btn">
+      <svg viewBox="0 0 24 24" stroke="currentColor"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      Filter
+    </button>
+    <button class="btn btn-primary">
+      <svg viewBox="0 0 24 24" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add
+    </button>
+    <button class="icon-only" aria-label="More actions">
+      <svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+    </button>
+  </div>
+
+  <!-- Filter row -->
+  <div class="filter-row">
+    <span class="lbl">Filters:</span>
+    <span class="fchip">
+      <button class="fchip-x" aria-label="Remove"><svg viewBox="0 0 12 12" stroke="currentColor"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg></button>
+      <span class="fchip-k">Approval Status</span>
+      <span class="fchip-sep">|</span>
+      <span class="fchip-v">In Approved, Pending</span>
+    </span>
+    <span class="fr-spacer"></span>
+    <button class="link-btn">
+      <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Save Filter
+    </button>
+    <button class="link-btn muted">
+      <svg viewBox="0 0 24 24" stroke="currentColor"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
+      Clear Filter
+    </button>
+  </div>
+
+  <!-- Table -->
+  <table>
+    <thead>
+      <tr>
+        <th class="col-reorder"><button class="reorder-btn" aria-label="Reorder columns"><svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="8 7 4 11 8 15"/><polyline points="16 7 20 11 16 15"/><line x1="4" y1="11" x2="20" y2="11"/></svg></button></th>
+        <th class="col-check"><span class="cb"></span></th>
+        <th><span class="th-inner">ID <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg class="active" viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span></th>
+        <th><span class="th-inner">Date <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span></th>
+        <th><span class="th-inner">Journal <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span></th>
+        <th><span class="th-inner">Vendor <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span></th>
+        <th><span class="th-inner">Total Amount <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span></th>
+        <th><span class="th-inner">Approval Status <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span></th>
+        <th><span class="th-inner">Status <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+
+  <!-- Footer -->
+  <div class="footer">
+    <button class="ft-icon" aria-label="Columns">
+      <svg viewBox="0 0 24 24" stroke="currentColor"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+    </button>
+    <button class="ft-select">Default <svg viewBox="0 0 12 8" stroke="currentColor"><polyline points="1 1 6 6 11 1"/></svg></button>
+    <button class="ft-select filter-active">Approved <svg viewBox="0 0 12 8" stroke="currentColor"><polyline points="1 1 6 6 11 1"/></svg></button>
+    <button class="ft-add" aria-label="Add view"><svg viewBox="0 0 12 12" stroke="currentColor"><line x1="6" y1="2" x2="6" y2="10"/><line x1="2" y1="6" x2="10" y2="6"/></svg></button>
+    <span class="ft-divider"></span>
+    <button class="save-btn">
+      Save
+      <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+    </button>
+    <div class="ipp-row">
+      <span class="pl">Items per page :</span>
+      <span class="per-page">20 <svg viewBox="0 0 12 8" stroke="currentColor"><polyline points="1 1 6 6 11 1"/></svg></span>
+      <span class="pl" style="margin-left:6px;">Go To :</span>
+      <input class="goto-input" type="number" />
+      <button class="arrow-btn" aria-label="Previous" disabled><svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <span class="page-of">Page <b>1</b> of 8</span>
+      <button class="arrow-btn" aria-label="Next"><svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const ROWS = [
+    ['CSH-00000003','21-04-2026','—','Mohit Kumar','INR 126,645.00','approved','paid'],
+    ['PAY-2026-000311','30-04-2026','JNL-00021','Mohit Kumar','INR 517.86','approved','paid'],
+    ['CSH-00000002','28-04-2026','—','Mohit Kumar','INR 10.00','approved','paid'],
+    ['CSH-00000001','28-04-2026','—','Mohit Kumar','INR 10.00','approved','paid'],
+    ['PAY-2026-000307','28-04-2026','JNL-00020','Mohit Kumar','INR 10.00','approved','paid'],
+    ['PAY-2026-000306','28-04-2026','JNL-00019','Mohit Kumar','INR 50.00','approved','paid'],
+    ['PAY-2026-000305','21-04-2026','JNL-00018','Mohit Kumar','INR 243,800.00','approved','paid'],
+    ['PAY-2026-000304','21-04-2026','—','Mohit Kumar','INR 126,645.00','pending','pending'],
+    ['PAY-2026-000303','21-04-2026','—','Mohit Kumar','INR 900.00','pending','pending'],
+    ['PAY-2026-000296','14-04-2026','JNL-00017','Mohit Kumar','INR 114,373.93','approved','paid'],
+    ['PAY-2026-000295','14-04-2026','JNL-00016','Mohit Kumar','INR 2,000.00','approved','paid'],
+    ['PAY-2026-000294','14-04-2026','JNL-00015','Mohit Kumar','INR 56,550.00','approved','paid'],
+    ['PAY-2026-000293','13-04-2026','—','Mohit Kumar','INR 1,100.00','pending','pending'],
+    ['PAY-2026-000292','10-04-2026','JNL-00014','Akash Navale','USD 43.50','approved','paid'],
+  ];
+  const STATUS_LABEL = { approved:'Approved', pending:'Pending', paid:'Paid', draft:'Draft', rejected:'Rejected' };
+  const tbody = document.getElementById('tbody');
+  const ROW_MENU_HTML = `
+    <div class="row-menu" role="menu">
+      <button class="rm-item" role="menuitem">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        View
+      </button>
+      <button class="rm-item" role="menuitem">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Edit
+      </button>
+      <button class="rm-item" role="menuitem">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Duplicate
+      </button>
+      <button class="rm-item" role="menuitem">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        Export
+      </button>
+      <button class="rm-item" role="menuitem">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+        Archive
+      </button>
+      <div class="rm-divider"></div>
+      <button class="rm-item danger" role="menuitem">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        Delete
+      </button>
+    </div>
+  `;
+  tbody.innerHTML = ROWS.map((r, i) => `
+    <tr>
+      <td class="col-reorder"><button class="row-kebab${i === 0 ? ' open' : ''}" title="Row actions"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>${i === 0 ? ROW_MENU_HTML : ''}</td>
+      <td class="col-check"><span class="cb"></span></td>
+      <td><a class="id-link" href="#">${r[0]}</a></td>
+      <td class="muted">${r[1]}</td>
+      <td class="muted">${r[2]}</td>
+      <td>${r[3]}</td>
+      <td class="amount">${r[4]}</td>
+      <td><span class="pill ${r[5]}">${STATUS_LABEL[r[5]]}</span></td>
+      <td><span class="pill ${r[6]}">${STATUS_LABEL[r[6]]}</span></td>
+    </tr>
+  `).join('');
+
+  function closeAllRowMenus() {
+    document.querySelectorAll('.row-menu').forEach(m => m.remove());
+    document.querySelectorAll('.row-kebab.open').forEach(b => b.classList.remove('open'));
+  }
+  document.body.addEventListener('click', e => {
+    const cb = e.target.closest('.cb');
+    if (cb) cb.classList.toggle('checked');
+    const vp = e.target.closest('.view-pill');
+    if (vp) {
+      vp.parentElement.querySelectorAll('.view-pill').forEach(b => b.classList.remove('active'));
+      vp.classList.add('active');
+    }
+    const kb = e.target.closest('.row-kebab');
+    if (kb) {
+      const wasOpen = kb.classList.contains('open');
+      closeAllRowMenus();
+      if (!wasOpen) {
+        kb.classList.add('open');
+        kb.insertAdjacentHTML('afterend', ROW_MENU_HTML);
+      }
+      e.stopPropagation();
+      return;
+    }
+    if (!e.target.closest('.row-menu')) closeAllRowMenus();
+  });
+</script>
+
+</body>
+</html>

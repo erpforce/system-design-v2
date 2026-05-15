@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #fff; padding: 20px; }
+.row { display: flex; flex-direction: column; gap: 8px; }
+.item { display: flex; align-items: center; gap: 12px; }
+.dot { width: 32px; height: 32px; border-radius: 4px; flex-shrink: 0; border: 1px solid #F0F0F0; }
+.info { display: flex; flex-direction: column; gap: 1px; }
+.name { font-size: 11px; font-weight: 500; color: #1F2125; }
+.hex  { font-size: 10px; color: #8E8E93; font-family: monospace; }
+.sample { font-size: 13px; margin-left: auto; }
+</style></head><body>
+<div class="row">
+  <div class="item"><div class="dot" style="background:#1F2125"></div><div class="info"><div class="name">Text Primary</div><div class="hex">#1F2125</div></div><span class="sample" style="color:#1F2125;font-family:'Inter',sans-serif">Document Master</span></div>
+  <div class="item"><div class="dot" style="background:#232529"></div><div class="info"><div class="name">Text Strong</div><div class="hex">#232529</div></div><span class="sample" style="color:#232529;font-family:'Inter',sans-serif">Section Title</span></div>
+  <div class="item"><div class="dot" style="background:#656669"></div><div class="info"><div class="name">Text Secondary</div><div class="hex">#656669</div></div><span class="sample" style="color:#656669;font-family:'Inter',sans-serif">Field Label</span></div>
+  <div class="item"><div class="dot" style="background:#7B7C7F"></div><div class="info"><div class="name">Text Tertiary</div><div class="hex">#7B7C7F</div></div><span class="sample" style="color:#7B7C7F;font-family:'Inter',sans-serif">Caption text</span></div>
+  <div class="item"><div class="dot" style="background:#8E8E93"></div><div class="info"><div class="name">Text Muted</div><div class="hex">#8E8E93</div></div><span class="sample" style="color:#8E8E93;font-family:'Inter',sans-serif">Placeholder</span></div>
+  <div class="item"><div class="dot" style="background:#A7A8A9"></div><div class="info"><div class="name">Text Disabled</div><div class="hex">#A7A8A9</div></div><span class="sample" style="color:#A7A8A9;font-family:'Inter',sans-serif">Disabled field</span></div>
+</div>
+</body></html>

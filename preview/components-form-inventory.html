@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dynamic Form Engine — ERPForce</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 13px; color: #1F2125; background: #F5F6F7;
+    letter-spacing: -0.005em; -webkit-font-smoothing: antialiased;
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; border: none; background: transparent; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ── Shell ───────────────────────────────── */
+  .app { display: grid; grid-template-columns: 232px 1fr; min-height: 1240px; }
+  .sb { background: #F9F9F9; border-right: 1px solid #ECEDEF; padding: 16px 12px; display: flex; flex-direction: column; gap: 16px; }
+  .sb-logo { display: flex; align-items: center; gap: 8px; padding: 4px 8px; }
+  .sb-logo-mark { width: 28px; height: 28px; border-radius: 6px; background: linear-gradient(135deg,#2EB273,#1A6B44); display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 12px; }
+  .sb-logo-name { font-weight: 700; font-size: 14px; color: #1B2D26; }
+  .sb-logo-name span { color: #2EB273; }
+
+  .sb-section-label { font-size: 10.5px; font-weight: 700; color: #9E9E9E; text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 8px; margin-top: 4px; }
+  .sb-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; color: #424242; font-size: 12.5px; font-weight: 500; cursor: pointer; }
+  .sb-item:hover { background: rgba(0,0,0,0.04); }
+  .sb-item.active { background: #E8F5F0; color: #1A6B44; font-weight: 600; }
+  .sb-item .badge { margin-left: auto; font-size: 10.5px; background: #fff; border: 1px solid #ECEDEF; color: #757575; padding: 1px 6px; border-radius: 10px; font-weight: 600; }
+  .sb-item.active .badge { background: #2EB273; color: #fff; border-color: transparent; }
+  .sb-foot { margin-top: auto; font-size: 11px; color: #757575; padding: 8px; text-align: center; }
+  .sb-foot strong { color: #1A6B44; }
+
+  /* Main */
+  .main { display: flex; flex-direction: column; min-width: 0; }
+  .tb { height: 56px; background: #fff; border-bottom: 1px solid #ECEDEF; display: flex; align-items: center; padding: 0 20px; gap: 12px; }
+  .tb-mod { display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border-radius: 8px; }
+  .tb-mod:hover { background: #F5F6F7; }
+  .tb-mod-icon { width: 28px; height: 28px; border-radius: 6px; background: #E8F5F0; display: grid; place-items: center; font-size: 14px; }
+  .tb-mod-name { font-size: 14px; font-weight: 600; color: #1F2125; }
+  .tb-search { flex: 1; max-width: 440px; margin: 0 12px; position: relative; }
+  .tb-search input { width: 100%; height: 36px; padding: 0 12px 0 36px; border: 1px solid #ECEDEF; border-radius: 7px; background: #FAFBFB; font-size: 12.5px; outline: none; transition: all .15s; }
+  .tb-search input:focus { background: #fff; border-color: #2EB273; box-shadow: 0 0 0 3px rgba(46,178,115,0.12); }
+  .tb-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9E9E9E; }
+  .tb-search .kbd { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 10.5px; color: #9E9E9E; background: #fff; border: 1px solid #ECEDEF; border-radius: 4px; padding: 1px 5px; font-weight: 600; }
+  .tb-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+  .tb-icon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 6px; color: #5A5C61; position: relative; }
+  .tb-icon:hover { background: #F5F6F7; }
+  .tb-icon .dot { position: absolute; top: 8px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: #E53935; }
+  .tb-sep { width: 1px; height: 24px; background: #ECEDEF; margin: 0 6px; }
+  .tb-user { display: flex; align-items: center; gap: 10px; padding: 4px 8px 4px 4px; border-radius: 8px; }
+  .tb-user:hover { background: #F5F6F7; }
+  .tb-avatar { width: 32px; height: 32px; border-radius: 50%; background: #E8F5F0; color: #1A6B44; display: grid; place-items: center; font-weight: 700; font-size: 11.5px; }
+  .tb-user-name { font-size: 13px; font-weight: 600; line-height: 1.2; }
+  .tb-user-role { font-size: 11.5px; color: #757575; line-height: 1.2; }
+
+  /* Page header */
+  .ph { background: #fff; border-bottom: 1px solid #ECEDEF; padding: 16px 28px 0; }
+  .ph-row { display: flex; align-items: flex-start; gap: 16px; }
+  .ph-left { flex: 1; min-width: 0; }
+  .crumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #757575; margin-bottom: 6px; }
+  .crumb a { color: #2EB273; text-decoration: none; font-weight: 500; cursor: pointer; }
+  .crumb a:hover { text-decoration: underline; }
+  .crumb .sep { color: #C4C4C4; }
+  .crumb .draft { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; background: #F2F3F4; border-radius: 4px; font-size: 11px; font-weight: 600; color: #5A5C61; text-transform: uppercase; letter-spacing: 0.02em; }
+  .crumb .draft::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #9E9E9E; }
+  .ph-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin: 0; display: flex; align-items: center; gap: 10px; }
+  .ph-title-edit { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; padding: 2px 6px; margin: -2px -6px; border-radius: 6px; cursor: text; }
+  .ph-title-edit:hover { background: #F5F6F7; }
+  .ph-title-edit:focus { background: #fff; outline: 2px solid #2EB273; outline-offset: -1px; }
+  .ph-meta { display: flex; gap: 16px; font-size: 11.5px; color: #757575; margin-top: 4px; flex-wrap: wrap; }
+  .ph-meta b { color: #424242; font-weight: 600; }
+  .ph-actions { display: flex; align-items: center; gap: 8px; padding-top: 4px; position: relative; }
+
+  .btn { height: 34px; padding: 0 14px; border-radius: 6px; font-size: 12.5px; font-weight: 600; border: 1px solid transparent; display: inline-flex; align-items: center; gap: 6px; transition: all .12s; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-ghost { background: transparent; color: #424242; }
+  .btn-ghost:hover:not(:disabled) { background: #F5F6F7; }
+  .btn-secondary { background: #fff; border-color: #D3D3D4; color: #1F2125; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+  .btn-secondary:hover:not(:disabled) { background: #F9F9F9; }
+  .btn-primary { background: #2EB273; color: #fff; box-shadow: 0 4px 10px -2px rgba(20,78,50,0.18), 0 2px 2px -1px rgba(20,78,50,0.12); }
+  .btn-primary:hover:not(:disabled) { background: #279A63; }
+  .btn-primary-soft { background: #E8F5F0; color: #1A6B44; }
+  .btn-primary-soft:hover:not(:disabled) { background: #D1EBE1; }
+  .btn-danger { background: #fff; border-color: #FFCDD2; color: #C62828; }
+  .btn-danger:hover:not(:disabled) { background: #FFEBEE; }
+  .btn .kbd { font-size: 10px; color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.3); border-radius: 3px; padding: 0 4px; height: 14px; display: inline-flex; align-items: center; margin-left: 2px; }
+  .btn-secondary .kbd, .btn-ghost .kbd { color: #9E9E9E; border-color: #ECEDEF; }
+  .btn .caret { width: 10px; height: 10px; opacity: 0.7; }
+
+  /* Tabs */
+  .tabs { margin-top: 16px; display: flex; align-items: flex-end; overflow-x: auto; scrollbar-width: none; gap: 2px; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { display: flex; align-items: center; gap: 8px; padding: 10px 16px 12px; font-size: 13px; font-weight: 500; color: #757575; border-bottom: 2px solid transparent; white-space: nowrap; cursor: pointer; }
+  .tab:hover { color: #424242; }
+  .tab.active { color: #1A6B44; border-bottom-color: #2EB273; font-weight: 600; }
+  .tab-num { width: 18px; height: 18px; border-radius: 50%; background: #F2F3F4; color: #757575; display: grid; place-items: center; font-size: 10.5px; font-weight: 600; }
+  .tab.active .tab-num { background: #2EB273; color: #fff; }
+  .tab.done .tab-num { background: #E8F5F0; color: #2EB273; }
+  .tab.error .tab-num { background: #FFEBEE; color: #E53935; }
+  .tab .req { color: #E53935; font-size: 14px; line-height: 0; margin-left: -4px; }
+
+  /* Content */
+  .content-wrap { flex: 1; padding: 24px 28px 100px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; max-width: 1480px; width: 100%; }
+  .form-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+  /* Card */
+  .fc { background: #fff; border: 1px solid #ECEDEF; border-radius: 10px; overflow: visible; }
+  .fc-head { display: flex; align-items: flex-start; padding: 16px 22px 12px; gap: 12px; border-bottom: 1px solid #F2F3F4; }
+  .fc-head-text { flex: 1; min-width: 0; }
+  .fc-title { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 2px; display: flex; align-items: center; gap: 8px; }
+  .fc-sub { font-size: 11.5px; color: #757575; margin: 0; }
+  .fc-head-aside { display: flex; align-items: center; gap: 6px; position: relative; }
+  .fc-body { padding: 18px 22px 20px; }
+
+  .icon-btn { width: 28px; height: 28px; border-radius: 6px; display: grid; place-items: center; color: #757575; }
+  .icon-btn:hover { background: #F2F3F4; color: #1F2125; }
+
+  .opt-pill { font-size: 10px; font-weight: 600; color: #757575; background: #F2F3F4; border-radius: 4px; padding: 2px 6px; text-transform: uppercase; letter-spacing: 0.02em; }
+  .req-pill { font-size: 10px; font-weight: 600; color: #E53935; background: #FFEBEE; border-radius: 4px; padding: 2px 6px; text-transform: uppercase; letter-spacing: 0.02em; }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px; }
+  .span-2 { grid-column: span 2; }
+
+  /* Field */
+  .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .field-label { font-size: 12px; font-weight: 600; color: #424242; display: flex; align-items: center; gap: 6px; }
+  .field-label .req { color: #E53935; }
+  .field-label .opt { color: #9E9E9E; font-weight: 500; }
+  .field-label .hint { margin-left: auto; font-size: 11px; font-weight: 500; color: #9E9E9E; }
+  .field-label .help-trigger { width: 14px; height: 14px; border-radius: 50%; background: #F2F3F4; color: #757575; display: grid; place-items: center; font-size: 9px; font-weight: 700; cursor: help; }
+  .input { height: 36px; padding: 0 12px; border: 1px solid #D3D3D4; border-radius: 7px; background: #fff; font-size: 13px; outline: none; transition: all .15s; width: 100%; }
+  .input:focus { border-color: #2EB273; box-shadow: 0 0 0 3px rgba(46,178,115,0.15); }
+  .input::placeholder { color: #A8AAAE; }
+  .input.with-suffix { padding-right: 38px; }
+  .input.with-prefix { padding-left: 38px; }
+  .input:disabled { background: #FAFBFB; color: #757575; }
+  .input.error { border-color: #E53935; }
+  .input.error:focus { box-shadow: 0 0 0 3px rgba(229,57,53,0.15); }
+  textarea.input { height: auto; padding: 10px 12px; resize: vertical; min-height: 70px; line-height: 1.5; }
+  .field-help { font-size: 11.5px; color: #757575; }
+  .field-err { font-size: 11.5px; color: #E53935; display: flex; align-items: center; gap: 4px; }
+
+  .input-wrap { position: relative; }
+  .input-wrap .prefix, .input-wrap .suffix { position: absolute; top: 50%; transform: translateY(-50%); color: #9E9E9E; font-size: 12px; pointer-events: none; }
+  .input-wrap .prefix { left: 12px; }
+  .input-wrap .suffix { right: 12px; }
+  .input-wrap .suffix-btn { right: 4px; pointer-events: auto; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 5px; color: #757575; }
+  .input-wrap .suffix-btn:hover { background: #F2F3F4; color: #1F2125; }
+
+  /* Select */
+  .sel-wrap { position: relative; }
+  .select { display: inline-flex; align-items: center; width: 100%; height: 36px; padding: 0 12px; border: 1px solid #D3D3D4; border-radius: 7px; background: #fff; font-size: 13px; cursor: pointer; transition: all .15s; }
+  .select:hover { border-color: #A8AAAE; }
+  .select.placeholder { color: #A8AAAE; }
+  .select .chev { margin-left: auto; color: #9E9E9E; transition: transform .15s; }
+  .sel-wrap.open .select { border-color: #2EB273; box-shadow: 0 0 0 3px rgba(46,178,115,0.15); }
+  .sel-wrap.open .chev { transform: rotate(180deg); }
+  .sel-pop { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1px solid #ECEDEF; border-radius: 8px; box-shadow: 0 12px 32px -8px rgba(15,17,21,0.16), 0 2px 6px rgba(15,17,21,0.05); padding: 4px; z-index: 30; display: none; max-height: 260px; overflow: auto; }
+  .sel-wrap.open .sel-pop { display: block; }
+  .sel-opt { padding: 7px 10px; border-radius: 5px; font-size: 12.5px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .sel-opt:hover { background: #F5F6F7; }
+  .sel-opt.on { background: #E8F5F0; color: #1A6B44; font-weight: 600; }
+  .sel-opt .check { margin-left: auto; color: #2EB273; opacity: 0; }
+  .sel-opt.on .check { opacity: 1; }
+
+  /* Switch */
+  .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
+  .switch-track { width: 34px; height: 19px; border-radius: 999px; background: #D3D3D4; position: relative; transition: background .15s; }
+  .switch-thumb { position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.2); transition: left .15s; }
+  .switch.on .switch-track { background: #2EB273; }
+  .switch.on .switch-thumb { left: 17px; }
+  .switch-label { font-size: 12.5px; font-weight: 600; }
+  .switch-label .state-on { color: #1A6B44; }
+  .switch-label .state-off { color: #9E9E9E; }
+
+  /* Check */
+  .check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+  .check-box { width: 17px; height: 17px; border-radius: 4px; border: 1.5px solid #C4C4C4; background: #fff; display: grid; place-items: center; transition: all .12s; flex-shrink: 0; }
+  .check.on .check-box { background: #2EB273; border-color: #2EB273; }
+  .check.on .check-box::after { content: ''; width: 9px; height: 5px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg) translate(1px, -1px); }
+
+  /* Radio cards */
+  .radio-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .radio-card { display: flex; gap: 12px; padding: 14px; border: 1px solid #ECEDEF; border-radius: 8px; cursor: pointer; transition: all .12s; }
+  .radio-card:hover { border-color: #C4C4C4; }
+  .radio-card.on { border-color: #2EB273; background: #F4FBF7; box-shadow: 0 0 0 3px rgba(46,178,115,0.10); }
+  .radio-dot { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #C4C4C4; background: #fff; margin-top: 2px; display: grid; place-items: center; }
+  .radio-card.on .radio-dot { border-color: #2EB273; }
+  .radio-card.on .radio-dot::after { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #2EB273; }
+  .radio-title { font-size: 12.5px; font-weight: 600; margin-bottom: 2px; }
+  .radio-sub { font-size: 11.5px; color: #757575; line-height: 1.4; }
+
+  /* Toggle tiles */
+  .toggle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .toggle-tile { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border: 1px solid #ECEDEF; border-radius: 8px; cursor: pointer; transition: all .12s; }
+  .toggle-tile:hover { border-color: #C4C4C4; }
+  .toggle-tile.on { border-color: #2EB273; background: #F4FBF7; }
+  .toggle-tile-title { font-size: 12.5px; font-weight: 600; }
+  .toggle-tile-sub { font-size: 11.5px; color: #757575; margin-top: 1px; line-height: 1.4; }
+
+  /* Upload */
+  .dz { display: flex; gap: 14px; align-items: center; padding: 14px; border: 1.5px dashed #D3D3D4; border-radius: 10px; background: #FAFBFB; cursor: pointer; transition: all .15s; }
+  .dz:hover { background: #F4FBF7; border-color: #2EB273; }
+  .dz-preview { width: 64px; height: 64px; border-radius: 8px; background: #F2F3F4; display: grid; place-items: center; color: #9E9E9E; flex-shrink: 0; }
+  .dz-body { flex: 1; }
+  .dz-title { font-size: 12.5px; font-weight: 600; margin-bottom: 2px; }
+  .dz-sub { font-size: 11.5px; color: #757575; }
+  .dz-link { color: #2EB273; font-weight: 600; font-size: 12px; padding: 6px 12px; border-radius: 6px; border: 1px solid #ECEDEF; background: #fff; }
+
+  /* Section heading */
+  .sec-h { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; color: #1F2125; }
+  .sec-h::before { content: ''; width: 3px; height: 13px; background: #2EB273; border-radius: 2px; }
+  .sec-h .count { font-weight: 600; color: #9E9E9E; text-transform: none; letter-spacing: 0; font-size: 11px; }
+  .divider { height: 1px; background: #F2F3F4; margin: 18px 0; }
+
+  /* Inline table */
+  .itbl { border: 1px solid #ECEDEF; border-radius: 8px; overflow: visible; }
+  .itbl-scroll { overflow-x: auto; }
+  .itbl table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .itbl th { text-align: left; padding: 9px 12px; background: #FAFBFB; font-weight: 600; color: #5A5C61; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #ECEDEF; }
+  .itbl th.r, .itbl td.r { text-align: right; }
+  .itbl th.act, .itbl td.act { width: 44px; text-align: center; }
+  .itbl td { padding: 10px 12px; border-bottom: 1px solid #F2F3F4; vertical-align: middle; height: 40px; }
+  .itbl tr:last-child td { border-bottom: none; }
+  .itbl tr:hover td { background: #FAFBFB; }
+  .itbl .row-act { width: 26px; height: 26px; color: #757575; border-radius: 5px; display: inline-grid; place-items: center; position: relative; }
+  .itbl .row-act:hover { background: #F2F3F4; color: #1F2125; }
+  .itbl .row-act.danger:hover { background: #FFEBEE; color: #E53935; }
+  .itbl-foot { background: #FAFBFB; border-top: 1px solid #ECEDEF; padding: 8px 10px; display: flex; align-items: center; gap: 6px; }
+  .itbl-foot button { border: 1px dashed #C4C4C4; color: #1A6B44; padding: 5px 11px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+  .itbl-foot button:hover { background: #F4FBF7; border-color: #2EB273; }
+  .itbl-foot .meta { margin-left: auto; font-size: 11.5px; color: #9E9E9E; }
+
+  /* Chip */
+  .chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px 3px 10px; background: #F2F3F4; border-radius: 12px; font-size: 11.5px; font-weight: 500; }
+  .chip.green { background: #E8F5F0; color: #1A6B44; }
+  .chip.green::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #2EB273; margin-right: 3px; }
+  .chip .x { color: #9E9E9E; cursor: pointer; padding-left: 2px; }
+  .chip .x:hover { color: #1F2125; }
+
+  /* Rail */
+  .rail { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 16px; }
+  .rc { background: #fff; border: 1px solid #ECEDEF; border-radius: 10px; padding: 16px 18px; }
+  .rc-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .rc-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .rc-collapse { margin-left: auto; color: #9E9E9E; }
+  .progress-row { display: flex; flex-direction: column; gap: 6px; }
+  .progress-item { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+  .progress-item:hover { background: #FAFBFB; }
+  .progress-bullet { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; font-size: 10px; font-weight: 700; }
+  .progress-bullet.done { background: #E8F5F0; color: #2EB273; }
+  .progress-bullet.todo { background: #F2F3F4; color: #9E9E9E; }
+  .progress-bullet.active { background: #2EB273; color: #fff; }
+  .progress-bullet.error { background: #FFEBEE; color: #E53935; }
+  .progress-text { flex: 1; font-weight: 500; }
+  .progress-meta { font-size: 10.5px; color: #9E9E9E; text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600; }
+  .progress-meta.req { color: #E53935; }
+  .progress-meta.now { color: #2EB273; }
+  .progress-bar { height: 5px; background: #F2F3F4; border-radius: 999px; overflow: hidden; margin-bottom: 8px; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg,#2EB273,#54CC96); border-radius: 999px; transition: width .3s; }
+
+  /* Sticky bar */
+  .sticky-bar { position: fixed; left: 232px; right: 0; bottom: 0; background: #fff; border-top: 1px solid #ECEDEF; padding: 12px 28px; display: flex; align-items: center; gap: 10px; box-shadow: 0 -4px 16px rgba(15,17,21,0.04); z-index: 30; }
+  .sticky-status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #5A5C61; }
+  .sticky-status .dot { width: 6px; height: 6px; border-radius: 50%; background: #2EB273; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+  .sticky-status .changes { color: #1A6B44; font-weight: 600; }
+  .sticky-spacer { flex: 1; }
+
+  /* Menus */
+  .menu { position: absolute; top: calc(100% + 6px); right: 0; background: #fff; border: 1px solid #ECEDEF; border-radius: 8px; box-shadow: 0 12px 32px -8px rgba(15,17,21,0.18), 0 2px 6px rgba(15,17,21,0.06); padding: 4px; min-width: 220px; z-index: 50; display: none; }
+  .menu.open { display: block; }
+  .menu-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 5px; font-size: 12.5px; cursor: pointer; }
+  .menu-item:hover { background: #F5F6F7; }
+  .menu-item .kb { margin-left: auto; font-size: 10.5px; color: #9E9E9E; font-family: 'JetBrains Mono', monospace; }
+  .menu-item.danger { color: #C62828; }
+  .menu-item.danger:hover { background: #FFEBEE; }
+  .menu-sep { height: 1px; background: #F2F3F4; margin: 4px 0; }
+  .menu-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #9E9E9E; padding: 6px 10px 4px; }
+
+  /* Toast */
+  .toast-wrap { position: fixed; bottom: 80px; right: 28px; z-index: 100; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  .toast { background: #1F2125; color: #fff; padding: 10px 14px 10px 12px; border-radius: 8px; font-size: 12.5px; display: flex; align-items: center; gap: 10px; box-shadow: 0 12px 32px -8px rgba(15,17,21,0.24); min-width: 280px; max-width: 380px; animation: toastIn .2s ease-out; pointer-events: auto; }
+  .toast.success { border-left: 3px solid #2EB273; }
+  .toast.error { border-left: 3px solid #E53935; }
+  .toast.info { border-left: 3px solid #5A8DEE; }
+  .toast .close { margin-left: auto; color: rgba(255,255,255,0.5); cursor: pointer; padding: 2px; }
+  .toast .close:hover { color: #fff; }
+  .toast .undo { color: #54CC96; font-weight: 600; cursor: pointer; margin-left: auto; padding: 2px 8px; border-radius: 4px; }
+  .toast .undo:hover { background: rgba(255,255,255,0.1); }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Modal */
+  .modal-bg { position: fixed; inset: 0; background: rgba(15,17,21,0.4); z-index: 200; display: none; align-items: center; justify-content: center; }
+  .modal-bg.open { display: flex; }
+  .modal { background: #fff; border-radius: 12px; box-shadow: 0 24px 64px -12px rgba(15,17,21,0.32); width: 100%; max-width: 520px; max-height: 90vh; overflow: auto; }
+  .modal-head { padding: 18px 22px 14px; border-bottom: 1px solid #F2F3F4; display: flex; align-items: flex-start; gap: 12px; }
+  .modal-head-icon { width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; }
+  .modal-head-icon.danger { background: #FFEBEE; color: #E53935; }
+  .modal-head-icon.info { background: #E8EAF6; color: #3949AB; }
+  .modal-head-icon.warn { background: #FFF3CC; color: #8A6D00; }
+  .modal-title { font-size: 15px; font-weight: 600; }
+  .modal-sub { font-size: 12.5px; color: #757575; margin-top: 2px; }
+  .modal-body { padding: 16px 22px; }
+  .modal-body p { margin: 0 0 8px; font-size: 13px; line-height: 1.5; color: #424242; }
+  .modal-foot { padding: 12px 22px; border-top: 1px solid #F2F3F4; background: #FAFBFB; display: flex; justify-content: flex-end; gap: 8px; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+
+  /* Tab panels */
+  .tab-panel { display: none; flex-direction: column; gap: 16px; }
+  .tab-panel.active { display: flex; }
+
+  /* Schema picker dropdown */
+  .schema-pick { position: relative; }
+  .schema-trigger { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 10px; border-radius: 6px; background: #fff; border: 1px solid #ECEDEF; font-size: 12px; font-weight: 600; color: #424242; }
+  .schema-trigger:hover { background: #F9F9F9; border-color: #C4C4C4; }
+  .schema-trigger .mono-mini { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #2EB273; background: #E8F5F0; padding: 1px 5px; border-radius: 3px; }
+
+  /* Schema viewer */
+  .schema-viewer { background: #1F2125; color: #E8EAED; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.55; padding: 16px 20px; border-radius: 8px; overflow: auto; max-height: 460px; }
+  .schema-viewer .k { color: #88C0D0; }
+  .schema-viewer .s { color: #A3BE8C; }
+  .schema-viewer .n { color: #EBCB8B; }
+  .schema-viewer .b { color: #B48EAD; }
+  .schema-viewer .c { color: #6B7077; font-style: italic; }
+  .schema-viewer .p { color: #6B7077; }
+
+  /* Engine info strip */
+  .engine-strip { display: flex; gap: 12px; align-items: center; padding: 10px 14px; background: #F4FBF7; border: 1px solid #BAE1D2; border-radius: 8px; font-size: 12px; color: #1A6B44; }
+  .engine-strip .pill { background: #2EB273; color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; }
+  .engine-strip .right { margin-left: auto; display: flex; gap: 6px; }
+  .engine-strip a { color: #1A6B44; font-weight: 600; cursor: pointer; padding: 3px 8px; border-radius: 5px; border: 1px solid transparent; }
+  .engine-strip a:hover { background: #fff; border-color: #BAE1D2; }
+  .engine-strip a.on { background: #fff; border-color: #BAE1D2; }
+
+  /* Misc icons */
+  .ic { width: 16px; height: 16px; stroke-width: 1.8; fill: none; }
+  .ic-sm { width: 12px; height: 12px; stroke-width: 1.8; fill: none; }
+
+  /* Audit log */
+  .audit { display: flex; flex-direction: column; gap: 0; }
+  .audit-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px dashed #F2F3F4; font-size: 12px; }
+  .audit-item:last-child { border-bottom: none; }
+  .audit-time { color: #9E9E9E; font-size: 10.5px; min-width: 56px; padding-top: 1px; font-variant-numeric: tabular-nums; }
+  .audit-body { flex: 1; min-width: 0; }
+  .audit-actor { font-weight: 600; }
+  .audit-detail { color: #5A5C61; }
+
+  /* Form status banner */
+  .status-bar { display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 8px; font-size: 12px; margin-bottom: 12px; }
+  .status-bar.draft { background: #FAFBFB; border: 1px solid #ECEDEF; color: #5A5C61; }
+  .status-bar.draft b { color: #1F2125; }
+  .status-bar.error { background: #FFEBEE; border: 1px solid #FFCDD2; color: #C62828; }
+  .status-bar .actions { margin-left: auto; display: flex; gap: 4px; }
+  .status-bar a { color: inherit; font-weight: 600; cursor: pointer; padding: 2px 8px; border-radius: 4px; }
+  .status-bar a:hover { background: rgba(255,255,255,0.6); }
+</style>
+</head>
+<body>
+
+<!-- ─────────────────────────────────────────────────────────
+     SCHEMAS — every form in the ERP is metadata.
+     Add one of these to the registry and the engine renders it.
+     ───────────────────────────────────────────────────────── -->
+<script>
+const SCHEMA_REGISTRY = {
+
+  /* ════════════════ INVENTORY ITEM ════════════════ */
+  'inventory.item': {
+    id: 'inventory.item',
+    title: 'Add Inventory Item',
+    module: 'Inventory',
+    moduleIcon: '📦',
+    breadcrumb: [{ label: 'Items', href: '#items' }, { label: 'Add Item' }],
+    recordName: 'Scaffolding Coupler',
+    recordMeta: [
+      { k: 'SKU', v: '—' },
+      { k: 'Parent', v: 'CAP-COU-0001 · Coupler' },
+      { k: 'Created', v: 'just now · Naidu Setti' }
+    ],
+    actions: ['discard', 'saveDraft', 'saveNext', 'save'],
+    tabs: [
+      {
+        id: 'primary', label: 'Primary', status: 'done',
+        cards: [
+          {
+            title: 'General Information',
+            sub: 'Identification used throughout sales, purchasing, and reports.',
+            sectionLabel: 'Step 1 of 9',
+            cardActions: ['help', 'lock'],
+            fields: [
+              { key: 'photo', type: 'upload', label: 'Profile', span: 2, optional: true, accept: 'image/*', help: 'PNG, JPG, or WebP. Square recommended.' },
+              { key: 'name', type: 'text', label: 'Name', required: true, value: 'Scaffolding Coupler', maxLength: 80, help: 'Shown on quotes, invoices, catalog.' },
+              { key: 'parent', type: 'select', label: 'Parent Item', optional: true, value: 'CAP-COU-0001', options: [{ v: 'CAP-COU-0001', l: 'CAP-COU-0001 · Coupler' }, { v: 'CAP-COU-0002', l: 'CAP-COU-0002 · Clamp' }] },
+              { key: 'sku', type: 'text', label: 'SKU', required: true, placeholder: 'Auto-generate or enter', suffixBtn: { icon: 'refresh', action: 'generateSku', tip: 'Generate SKU' }, help: 'Globally unique. Cannot change after first transaction.' },
+              { key: 'status', type: 'switch', label: 'Status', value: true, onText: 'Active', offText: 'Inactive', help: 'Available across the platform.' }
+            ]
+          },
+          {
+            section: 'Behaviours',
+            fields: [
+              { key: 'forRental', type: 'toggleTile', title: 'For Rental', sub: 'Enables the Rental Price tab and period-based pricing.' },
+              { key: 'landedCost', type: 'toggleTile', title: 'Track Landed Cost', sub: "Include freight, duty, and handling in the item's cost basis." }
+            ],
+            layout: 'toggleGrid'
+          },
+          {
+            title: 'Category & Classification',
+            sub: 'Helps with search, reports, and tax/account defaults.',
+            fields: [
+              { key: 'category', type: 'select', label: 'Category', required: true, placeholder: 'Search category…', options: [{ v: 'cap', l: 'CAP · Capital Goods' }, { v: 'con', l: 'CON · Consumables' }] },
+              { key: 'brand', type: 'select', label: 'Brand', optional: true, placeholder: 'Search brand…', options: [{ v: 'b1', l: 'Layher' }, { v: 'b2', l: 'Plettac' }] },
+              { key: 'tags', type: 'chips', label: 'Tags', optional: true, span: 2, value: ['scaffolding', 'construction'] }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'rental', label: 'Rental Price', status: 'active',
+        cards: [
+          {
+            title: 'Rental Pricing',
+            sub: 'Define base price and time-based rates. Customers see the closest period match.',
+            headChip: { label: 'For Rental · On', tone: 'green' },
+            fields: [
+              { key: 'basePrice', type: 'currency', label: 'Base Price', required: true, value: '120.00', currency: 'SAR', help: 'Falls back when no period matches.' },
+              { key: 'rentalDesc', type: 'textarea', label: 'Rental Description', optional: true, maxLength: 280, placeholder: 'Notes shown on the rental contract…' }
+            ]
+          },
+          { custom: 'rateCardTable' }
+        ]
+      },
+      { id: 'sales', label: 'Sales', status: 'todo', cards: [{ placeholder: 'Sales settings appear here.' }] },
+      { id: 'purchase', label: 'Purchase', status: 'todo', cards: [{ placeholder: 'Purchase settings appear here.' }] },
+      { id: 'accounting', label: 'Accounting', status: 'todo', cards: [{ placeholder: 'Accounting mappings appear here.' }] },
+      { id: 'inventory', label: 'Inventory', status: 'todo', required: true, cards: [{ custom: 'inventoryTab' }] },
+      { id: 'rules', label: 'Price Rules / Sales', status: 'todo', cards: [{ custom: 'rulesEmpty' }] },
+      { id: 'updates', label: 'Update Quantity', status: 'todo', cards: [{ placeholder: 'Manual quantity adjustments appear here.' }] },
+      { id: 'moves', label: 'Moves History', status: 'todo', cards: [{ placeholder: 'Movement history appears here.' }] }
+    ]
+  },
+
+  /* ════════════════ CUSTOMER ════════════════ */
+  'crm.customer': {
+    id: 'crm.customer',
+    title: 'New Customer',
+    module: 'CRM',
+    moduleIcon: '👥',
+    breadcrumb: [{ label: 'Customers', href: '#customers' }, { label: 'New Customer' }],
+    recordName: 'Untitled Customer',
+    recordMeta: [{ k: 'Code', v: '—' }, { k: 'Type', v: 'Business' }],
+    actions: ['discard', 'saveDraft', 'save'],
+    tabs: [
+      {
+        id: 'profile', label: 'Profile', status: 'active',
+        cards: [{
+          title: 'Customer Profile', sub: 'Basic identity and contact details.',
+          fields: [
+            { key: 'cName', type: 'text', label: 'Company Name', required: true, placeholder: 'e.g. Al-Rawabi Trading Co.' },
+            { key: 'cType', type: 'select', label: 'Type', required: true, value: 'biz', options: [{ v: 'biz', l: 'Business' }, { v: 'ind', l: 'Individual' }] },
+            { key: 'cEmail', type: 'text', label: 'Email', required: true, placeholder: 'name@company.com' },
+            { key: 'cPhone', type: 'text', label: 'Phone', placeholder: '+966 5X XXX XXXX' },
+            { key: 'cWebsite', type: 'text', label: 'Website', optional: true, placeholder: 'https://…' },
+            { key: 'cCurrency', type: 'select', label: 'Currency', value: 'sar', options: [{ v: 'sar', l: 'SAR · Saudi Riyal' }, { v: 'usd', l: 'USD · US Dollar' }, { v: 'aed', l: 'AED · UAE Dirham' }] }
+          ]
+        }]
+      },
+      { id: 'address', label: 'Addresses', status: 'todo', cards: [{ placeholder: 'Billing & shipping addresses.' }] },
+      { id: 'tax', label: 'Tax & Billing', status: 'todo', cards: [{ placeholder: 'VAT, payment terms, credit limit.' }] },
+      { id: 'contacts', label: 'Contacts', status: 'todo', cards: [{ placeholder: 'Named contacts at this account.' }] }
+    ]
+  },
+
+  /* ════════════════ VENDOR ════════════════ */
+  'procurement.vendor': {
+    id: 'procurement.vendor', title: 'New Vendor', module: 'Procurement', moduleIcon: '🏭',
+    breadcrumb: [{ label: 'Vendors', href: '#vendors' }, { label: 'New Vendor' }],
+    recordName: 'Untitled Vendor', recordMeta: [{ k: 'Code', v: '—' }, { k: 'Status', v: 'Draft' }],
+    actions: ['discard', 'saveDraft', 'save'],
+    tabs: [
+      {
+        id: 'profile', label: 'Profile', status: 'active',
+        cards: [{
+          title: 'Vendor Profile', sub: 'Counterparty info used on POs and bills.',
+          fields: [
+            { key: 'vName', type: 'text', label: 'Vendor Name', required: true, placeholder: 'Legal name as on commercial registration' },
+            { key: 'vCR', type: 'text', label: 'CR / Tax ID', required: true, placeholder: 'e.g. 1010234567' },
+            { key: 'vTerms', type: 'select', label: 'Payment Terms', value: 'n30', options: [{ v: 'n15', l: 'Net 15' }, { v: 'n30', l: 'Net 30' }, { v: 'n60', l: 'Net 60' }, { v: 'cod', l: 'Cash on Delivery' }] },
+            { key: 'vCurrency', type: 'select', label: 'Default Currency', value: 'sar', options: [{ v: 'sar', l: 'SAR' }, { v: 'usd', l: 'USD' }] }
+          ]
+        }]
+      },
+      { id: 'bank', label: 'Banking', status: 'todo', cards: [{ placeholder: 'Bank accounts & wire details.' }] },
+      { id: 'compliance', label: 'Compliance', status: 'todo', cards: [{ placeholder: 'Insurance, certifications, expiry tracking.' }] }
+    ]
+  }
+};
+</script>
+
+<div class="app">
+  <!-- ─── Sidebar ─── -->
+  <aside class="sb">
+    <div class="sb-logo">
+      <div class="sb-logo-mark">EF</div>
+      <div class="sb-logo-name"><span>ERP</span>Force</div>
+    </div>
+    <div class="sb-section-label">Form Registry · live</div>
+    <div class="sb-item active" data-schema="inventory.item">
+      <svg class="ic" viewBox="0 0 24 24" stroke="currentColor"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      Inventory Item<span class="badge">9 tabs</span>
+    </div>
+    <div class="sb-item" data-schema="crm.customer">
+      <svg class="ic" viewBox="0 0 24 24" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Customer<span class="badge">4 tabs</span>
+    </div>
+    <div class="sb-item" data-schema="procurement.vendor">
+      <svg class="ic" viewBox="0 0 24 24" stroke="currentColor"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
+      Vendor<span class="badge">3 tabs</span>
+    </div>
+    <div class="sb-section-label">Engine</div>
+    <div class="sb-item" id="viewSchemaBtn">
+      <svg class="ic" viewBox="0 0 24 24" stroke="currentColor"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      View Schema JSON
+    </div>
+    <div class="sb-item" id="addFormBtn">
+      <svg class="ic" viewBox="0 0 24 24" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Register New Form…
+    </div>
+    <div class="sb-foot">Built with <span style="color:#E53935;">♥</span> <strong>ERPForce</strong>™</div>
+  </aside>
+
+  <!-- ─── Main ─── -->
+  <div class="main">
+    <header class="tb">
+      <button class="tb-mod" id="moduleBtn">
+        <div class="tb-mod-icon" id="moduleIcon">📦</div>
+        <div class="tb-mod-name" id="moduleName">Inventory</div>
+        <svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="tb-search">
+        <svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="globalSearch" placeholder="Search items, vendors, orders…" />
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="tb-right">
+        <button class="tb-icon" data-action="notifications" title="Notifications"><svg class="ic" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg><span class="dot"></span></button>
+        <button class="tb-icon" data-action="help" title="Help"><svg class="ic" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
+        <div class="tb-sep"></div>
+        <button class="tb-user" id="userBtn">
+          <div class="tb-avatar">NS</div>
+          <div style="text-align:left;">
+            <div class="tb-user-name">Naidu Setti</div>
+            <div class="tb-user-role">Admin · ERPForce</div>
+          </div>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page header — fully rendered from schema -->
+    <div class="ph" id="pageHeader"></div>
+
+    <!-- Content -->
+    <div class="content-wrap">
+      <div class="form-col" id="formCol"></div>
+      <aside class="rail" id="rail"></aside>
+    </div>
+
+    <!-- Sticky bar -->
+    <div class="sticky-bar">
+      <div class="sticky-status">
+        <span class="dot"></span>
+        <span>Draft · <span class="changes" id="changeCount">2 unsaved changes</span> · <span id="savedAt">autosaved 2s ago</span></span>
+      </div>
+      <div class="sticky-spacer"></div>
+      <button class="btn btn-ghost" data-action="discard">Discard<span class="kbd">esc</span></button>
+      <button class="btn btn-secondary" data-action="saveDraft">Save Draft<span class="kbd">⌘S</span></button>
+      <button class="btn btn-primary-soft" data-action="saveNext">Save &amp; Next <svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+      <button class="btn btn-primary" data-action="save">Save &amp; Publish</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast region -->
+<div class="toast-wrap" id="toasts"></div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modal">
+  <div class="modal" id="modalInner"></div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   FORM ENGINE — renders any schema in SCHEMA_REGISTRY
+   ═══════════════════════════════════════════════════════════ */
+
+const State = {
+  schemaId: 'inventory.item',
+  activeTab: null,
+  values: {},
+  dirty: 0,
+  history: [],
+  lastSave: Date.now()
+};
+
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+/* ── Toast ─────────────────────────────────────────── */
+function toast(msg, opts = {}) {
+  const wrap = $('#toasts');
+  const t = document.createElement('div');
+  t.className = 'toast ' + (opts.tone || 'success');
+  const icon = opts.tone === 'error' ? '✕' : opts.tone === 'info' ? 'ⓘ' : '✓';
+  const color = opts.tone === 'error' ? '#FF8A80' : opts.tone === 'info' ? '#82B1FF' : '#54CC96';
+  t.innerHTML = `<span style="color:${color};font-weight:700;">${icon}</span><span>${msg}</span>`;
+  if (opts.undo) {
+    const u = document.createElement('span');
+    u.className = 'undo'; u.textContent = 'Undo';
+    u.onclick = () => { opts.undo(); t.remove(); };
+    t.appendChild(u);
+  } else {
+    const c = document.createElement('span');
+    c.className = 'close'; c.textContent = '✕';
+    c.onclick = () => t.remove();
+    t.appendChild(c);
+  }
+  wrap.appendChild(t);
+  setTimeout(() => t.remove(), opts.duration || 3200);
+}
+
+/* ── Modal ─────────────────────────────────────────── */
+function openModal({ title, sub, body, tone = 'info', actions = [] }) {
+  const m = $('#modal'), inner = $('#modalInner');
+  const iconSvg = {
+    danger: '<svg class="ic" viewBox="0 0 24 24" stroke="currentColor"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    warn: '<svg class="ic" viewBox="0 0 24 24" stroke="currentColor"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>',
+    info: '<svg class="ic" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+  }[tone];
+  inner.innerHTML = `
+    <div class="modal-head">
+      <div class="modal-head-icon ${tone}">${iconSvg}</div>
+      <div style="flex:1;"><div class="modal-title">${title}</div><div class="modal-sub">${sub || ''}</div></div>
+      <button class="icon-btn" onclick="closeModal()"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">${body || ''}</div>
+    <div class="modal-foot">
+      ${actions.map((a, i) => `<button class="btn btn-${a.tone || 'ghost'}" data-mi="${i}">${a.label}</button>`).join('')}
+    </div>`;
+  inner.querySelectorAll('[data-mi]').forEach((btn, i) => {
+    btn.onclick = () => { closeModal(); actions[i].onClick?.(); };
+  });
+  m.classList.add('open');
+}
+function closeModal() { $('#modal').classList.remove('open'); }
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+
+/* ── Field renderers ───────────────────────────────── */
+const renderers = {
+  text(f) {
+    return `
+      <div class="field" data-key="${f.key}">
+        ${labelHTML(f)}
+        <div class="input-wrap">
+          <input class="input ${f.required && !f.value ? '' : ''}" type="text"
+            data-key="${f.key}"
+            value="${escapeHtml(State.values[f.key] ?? f.value ?? '')}"
+            placeholder="${f.placeholder || ''}"
+            ${f.maxLength ? `maxlength="${f.maxLength}"` : ''}
+            ${f.disabled ? 'disabled' : ''}/>
+          ${f.suffixBtn ? `<button class="suffix-btn" data-action="${f.suffixBtn.action}" data-key="${f.key}" title="${f.suffixBtn.tip}">
+            ${iconSvg(f.suffixBtn.icon)}
+          </button>` : ''}
+        </div>
+        ${f.help ? `<span class="field-help">${f.help}</span>` : ''}
+      </div>`;
+  },
+  textarea(f) {
+    return `
+      <div class="field span-2" data-key="${f.key}">
+        ${labelHTML(f)}
+        <textarea class="input" data-key="${f.key}" placeholder="${f.placeholder || ''}" ${f.maxLength ? `maxlength="${f.maxLength}"` : ''}>${escapeHtml(State.values[f.key] ?? f.value ?? '')}</textarea>
+        ${f.help ? `<span class="field-help">${f.help}</span>` : ''}
+      </div>`;
+  },
+  currency(f) {
+    return `
+      <div class="field" data-key="${f.key}">
+        ${labelHTML(f)}
+        <div class="input-wrap">
+          <span class="prefix">${f.currency || 'SAR'}</span>
+          <input class="input with-prefix with-suffix" type="text" data-key="${f.key}" value="${State.values[f.key] ?? f.value ?? ''}"/>
+          <span class="suffix" style="font-size:11px;">/ unit</span>
+        </div>
+        ${f.help ? `<span class="field-help">${f.help}</span>` : ''}
+      </div>`;
+  },
+  select(f) {
+    const cur = State.values[f.key] ?? f.value;
+    const curLabel = f.options?.find(o => o.v === cur)?.l || f.placeholder || 'Select…';
+    return `
+      <div class="field" data-key="${f.key}">
+        ${labelHTML(f)}
+        <div class="sel-wrap" data-select="${f.key}">
+          <div class="select ${cur ? '' : 'placeholder'}" data-trigger>
+            <span>${curLabel}</span>
+            <svg class="ic-sm chev" viewBox="0 0 24 24" stroke="currentColor"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div class="sel-pop">
+            ${(f.options || []).map(o => `<div class="sel-opt ${o.v === cur ? 'on' : ''}" data-v="${o.v}"><span>${o.l}</span><svg class="ic-sm check" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg></div>`).join('')}
+          </div>
+        </div>
+        ${f.help ? `<span class="field-help">${f.help}</span>` : ''}
+      </div>`;
+  },
+  switch(f) {
+    const on = State.values[f.key] ?? f.value;
+    return `
+      <div class="field" data-key="${f.key}">
+        ${labelHTML(f)}
+        <div style="display:flex;align-items:center;gap:14px;height:36px;">
+          <button class="switch ${on ? 'on' : ''}" data-switch="${f.key}">
+            <div class="switch-track"><div class="switch-thumb"></div></div>
+          </button>
+          <div class="switch-label">
+            <span class="${on ? 'state-on' : 'state-off'}" data-switch-text="${f.key}">${on ? f.onText || 'On' : f.offText || 'Off'}</span>
+          </div>
+        </div>
+        ${f.help ? `<span class="field-help">${f.help}</span>` : ''}
+      </div>`;
+  },
+  toggleTile(f) {
+    const on = State.values[f.key] ?? f.value;
+    return `
+      <button class="toggle-tile ${on ? 'on' : ''}" data-toggle-tile="${f.key}">
+        <div class="check ${on ? 'on' : ''}"><span class="check-box"></span></div>
+        <div style="flex:1;text-align:left;min-width:0;">
+          <div class="toggle-tile-title">${f.title}</div>
+          <div class="toggle-tile-sub">${f.sub || ''}</div>
+        </div>
+      </button>`;
+  },
+  chips(f) {
+    const tags = State.values[f.key] ?? f.value ?? [];
+    return `
+      <div class="field span-2" data-key="${f.key}">
+        ${labelHTML(f)}
+        <div class="input-wrap" style="display:flex;gap:6px;flex-wrap:wrap;padding:6px;border:1px solid #D3D3D4;border-radius:7px;min-height:38px;align-items:center;" data-chips="${f.key}">
+          ${tags.map(t => `<span class="chip green">${t}<span class="x" data-chip-remove="${t}">×</span></span>`).join('')}
+          <input style="border:none;background:none;outline:none;flex:1;min-width:120px;height:28px;padding:0 6px;font-size:13px;" placeholder="Add tag, press ↵" data-chip-input="${f.key}"/>
+        </div>
+      </div>`;
+  },
+  upload(f) {
+    return `
+      <div class="field span-2" data-key="${f.key}">
+        ${labelHTML(f)}
+        <button class="dz" data-action="upload" data-key="${f.key}">
+          <div class="dz-preview"><svg class="ic" style="width:24px;height:24px;" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg></div>
+          <div class="dz-body">
+            <div class="dz-title">Drop image here or browse files</div>
+            <div class="dz-sub">${f.help || 'PNG, JPG, WebP up to 5 MB'}</div>
+          </div>
+          <span class="dz-link">Choose file</span>
+        </button>
+      </div>`;
+  }
+};
+
+function labelHTML(f) {
+  let hint = '';
+  if (f.maxLength) {
+    const v = String(State.values[f.key] ?? f.value ?? '');
+    hint = `<span class="hint" data-counter="${f.key}">${v.length} / ${f.maxLength}</span>`;
+  }
+  return `<span class="field-label">${f.label}${f.required ? '<span class="req">*</span>' : ''}${f.optional ? '<span class="opt">Optional</span>' : ''}${f.tip ? `<span class="help-trigger" data-tip="${f.tip}">?</span>` : ''}${hint}</span>`;
+}
+
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+function iconSvg(name) {
+  const map = {
+    refresh: '<svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><polyline points="21 3 21 8 16 8"/></svg>',
+    chev: '<svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><path d="m6 9 6 6 6-6"/></svg>'
+  };
+  return map[name] || '';
+}
+
+/* ── Custom cards (referenced by `custom:` key in schema) ── */
+const customCards = {
+  rateCardTable() {
+    return `
+      <div class="fc">
+        <div class="fc-head">
+          <div class="fc-head-text">
+            <div class="fc-title">Rate Card <span class="opt-pill">3 periods</span></div>
+            <p class="fc-sub">Add hourly, daily, weekly, or custom periods.</p>
+          </div>
+          <div class="fc-head-aside">
+            <button class="icon-btn" data-action="useTemplate" title="Use template"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 4v16M5 4v16M5 12h14"/></svg></button>
+            <button class="icon-btn" data-action="exportTable" title="Export"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+          </div>
+        </div>
+        <div class="fc-body" style="padding-top:14px;">
+          <div class="itbl">
+            <div class="itbl-scroll">
+              <table id="rateTable">
+                <thead><tr>
+                  <th>Period</th><th>Duration</th><th class="r">Price (SAR)</th><th class="r">Discount</th><th class="act"></th>
+                </tr></thead>
+                <tbody>
+                  <tr><td><b>Hourly</b></td><td>1 hour</td><td class="r mono">15.00</td><td class="r" style="color:#9E9E9E;">—</td><td class="act"><button class="row-act" data-row-menu="0"><svg class="ic-sm" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></button></td></tr>
+                  <tr><td><b>Daily</b></td><td>1 day</td><td class="r mono">100.00</td><td class="r" style="color:#1A6B44;font-weight:600;">−16.7%</td><td class="act"><button class="row-act" data-row-menu="1"><svg class="ic-sm" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></button></td></tr>
+                  <tr><td><b>Weekly</b></td><td>7 days</td><td class="r mono">600.00</td><td class="r" style="color:#1A6B44;font-weight:600;">−28.6%</td><td class="act"><button class="row-act" data-row-menu="2"><svg class="ic-sm" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="itbl-foot">
+              <button data-action="addRow"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>Add period</button>
+              <span class="meta">3 of 3 active</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  },
+  inventoryTab() {
+    return `
+      <div class="fc">
+        <div class="fc-head"><div class="fc-head-text"><div class="fc-title">Item Specification</div><p class="fc-sub">Physical and procurement details.</p></div></div>
+        <div class="fc-body"><div class="grid-2">
+          ${renderers.text({ key: 'leadTime', label: 'Default Lead Time', placeholder: '0', help: 'Days from PO to stock arrival.' })}
+          ${renderers.text({ key: 'weight', label: 'Weight (kg)', placeholder: '0.00', help: 'Used for shipping rate estimates.' })}
+          ${renderers.text({ key: 'hsn', label: 'HSN Code', placeholder: 'e.g. 7308.30', help: 'Harmonized System code for tax filings.' })}
+          ${renderers.currency({ key: 'avgCost', label: 'Average Cost', value: '0.00', currency: 'SAR', help: 'Auto-computed from receipts.' })}
+        </div></div>
+      </div>
+      <div class="fc">
+        <div class="fc-head"><div class="fc-head-text"><div class="fc-title">Traceability</div><p class="fc-sub">How individual units are identified.</p></div></div>
+        <div class="fc-body"><div class="radio-row">
+          <label class="radio-card" data-radio="trace" data-v="none"><span class="radio-dot"></span><div><div class="radio-title">No Tracking</div><div class="radio-sub">Track totals only. Fastest for fungible items.</div></div></label>
+          <label class="radio-card on" data-radio="trace" data-v="lot"><span class="radio-dot"></span><div><div class="radio-title">Lot Tracking</div><div class="radio-sub">Group units by batch / lot.</div></div></label>
+          <label class="radio-card" data-radio="trace" data-v="serial"><span class="radio-dot"></span><div><div class="radio-title">Serial Number</div><div class="radio-sub">One ID per unit.</div></div></label>
+        </div></div>
+      </div>`;
+  },
+  rulesEmpty() {
+    return `<div class="fc"><div class="fc-body" style="padding:48px 22px;text-align:center;">
+      <div style="width:48px;height:48px;border-radius:50%;background:#F4FBF7;color:#2EB273;display:grid;place-items:center;margin:0 auto 12px;"><svg class="ic" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px;">No price rules yet</div>
+      <div style="font-size:12.5px;color:#757575;margin-bottom:16px;">Give specific customers tiered or volume-based pricing.</div>
+      <button class="btn btn-primary" data-action="addRule"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>Add first rule</button>
+    </div></div>`;
+  }
+};
+
+/* ── Page header & tabs ───────────────────────────── */
+function renderPageHeader() {
+  const s = SCHEMA_REGISTRY[State.schemaId];
+  const tabsHtml = s.tabs.map(t => {
+    const isActive = t.id === State.activeTab;
+    const num = s.tabs.indexOf(t) + 1;
+    const cls = isActive ? 'active' : (t.status === 'done' ? 'done' : t.status === 'error' ? 'error' : '');
+    const numHtml = t.status === 'done' && !isActive
+      ? '<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" fill="none" style="width:11px;height:11px;"><polyline points="20 6 9 17 4 12"/></svg>'
+      : num;
+    return `<button class="tab ${cls}" data-tab="${t.id}"><span class="tab-num">${numHtml}</span>${t.label}${t.required ? '<span class="req">*</span>' : ''}</button>`;
+  }).join('');
+
+  $('#pageHeader').innerHTML = `
+    <div class="ph-row">
+      <div class="ph-left">
+        <div class="crumb">
+          ${s.breadcrumb.map((c, i) => i === s.breadcrumb.length - 1
+            ? `<span>${c.label}</span>`
+            : `<a data-crumb="${c.href}">${c.label}</a><span class="sep">/</span>`).join('')}
+          <span class="draft">Draft</span>
+        </div>
+        <h1 class="ph-title"><span class="ph-title-edit" contenteditable="true" data-record-name>${s.recordName}</span></h1>
+        <div class="ph-meta">${s.recordMeta.map(m => `<span>${m.k} <b>${m.v}</b></span>`).join('')}<span>Autosaved <b id="autosavedTxt">2s ago</b></span></div>
+      </div>
+      <div class="ph-actions">
+        ${s.actions.includes('discard') ? '<button class="btn btn-ghost" data-action="discard">Discard</button>' : ''}
+        ${s.actions.includes('saveDraft') ? '<button class="btn btn-secondary" data-action="saveDraft"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>Save Draft</button>' : ''}
+        ${s.actions.includes('saveNext') ? '<button class="btn btn-primary-soft" data-action="saveNext">Save &amp; Next <svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>' : ''}
+        ${s.actions.includes('save') ? '<button class="btn btn-primary" data-action="save">Save<span class="kbd">⌘S</span></button>' : ''}
+        <button class="btn btn-secondary" data-action="moreMenu" id="recordMoreBtn" style="padding:0 10px;"><svg class="ic-sm" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></button>
+        <div class="menu" id="recordMoreMenu">
+          <div class="menu-item" data-action="duplicate"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Duplicate as new<span class="kb">⌘D</span></div>
+          <div class="menu-item" data-action="exportRecord"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export as PDF</div>
+          <div class="menu-item" data-action="printRecord"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print<span class="kb">⌘P</span></div>
+          <div class="menu-sep"></div>
+          <div class="menu-item" data-action="viewHistory"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3"/><polyline points="12 7 12 12 16 14"/></svg>Version history</div>
+          <div class="menu-item" data-action="viewAudit"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Audit trail</div>
+          <div class="menu-sep"></div>
+          <div class="menu-item danger" data-action="archive"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Archive record</div>
+        </div>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs">${tabsHtml}</nav>`;
+}
+
+/* ── Render tab content ───────────────────────────── */
+function renderTabContent() {
+  const s = SCHEMA_REGISTRY[State.schemaId];
+  const tab = s.tabs.find(t => t.id === State.activeTab);
+  if (!tab) return;
+
+  const cards = tab.cards.map(card => {
+    if (card.custom) return customCards[card.custom]?.() || '';
+    if (card.placeholder) return `<div class="fc"><div class="fc-body" style="padding:48px;text-align:center;color:#9E9E9E;font-size:13px;">${card.placeholder}</div></div>`;
+
+    let head = '';
+    if (card.title) head = `
+      <div class="fc-head">
+        <div class="fc-head-text">
+          <div class="fc-title">${card.title}</div>
+          ${card.sub ? `<p class="fc-sub">${card.sub}</p>` : ''}
+        </div>
+        <div class="fc-head-aside">
+          ${card.sectionLabel ? `<span class="opt-pill">${card.sectionLabel}</span>` : ''}
+          ${card.headChip ? `<span class="chip ${card.headChip.tone || ''}">${card.headChip.label}</span>` : ''}
+          ${(card.cardActions || []).map(a => a === 'help' ? `<button class="icon-btn" data-action="cardHelp" title="Help"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>` : a === 'lock' ? `<button class="icon-btn" data-action="cardLock" title="Lock section"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>` : '').join('')}
+        </div>
+      </div>`;
+
+    let bodyHtml = '';
+    if (card.section) bodyHtml += `<div class="sec-h">${card.section}</div>`;
+    if (card.layout === 'toggleGrid') {
+      bodyHtml += `<div class="toggle-grid">${card.fields.map(f => renderers.toggleTile(f)).join('')}</div>`;
+    } else if (card.fields) {
+      bodyHtml += `<div class="grid-2">${card.fields.map(f => renderers[f.type]?.(f) || '').join('')}</div>`;
+    }
+    return `<div class="fc">${head}<div class="fc-body">${bodyHtml}</div></div>`;
+  }).join('');
+
+  // Optional status banner if tab.required and empty
+  let banner = '';
+  if (tab.required && tab.status !== 'done') {
+    banner = `<div class="status-bar error">
+      <svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span><b>This tab is required.</b> Complete it before publishing.</span>
+      <div class="actions"><a data-action="focusFirst">Jump to first field →</a></div>
+    </div>`;
+  }
+
+  $('#formCol').innerHTML = banner + cards;
+}
+
+/* ── Right rail ───────────────────────────────────── */
+function renderRail() {
+  const s = SCHEMA_REGISTRY[State.schemaId];
+  const done = s.tabs.filter(t => t.status === 'done').length;
+  const pct = Math.round((done / s.tabs.length) * 100);
+
+  $('#rail').innerHTML = `
+    <div class="rc">
+      <div class="rc-head"><span class="rc-title">Setup Progress</span><span class="rc-collapse"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><path d="m18 15-6-6-6 6"/></svg></span></div>
+      <div class="progress-bar"><div class="progress-bar-fill" style="width:${pct}%;"></div></div>
+      <div style="font-size:11.5px;color:#5A5C61;margin-bottom:10px;display:flex;justify-content:space-between;">
+        <span><b style="color:#1A6B44;">${done} of ${s.tabs.length}</b> sections complete</span>
+        <span style="color:#9E9E9E;">${pct}%</span>
+      </div>
+      <div class="progress-row">
+        ${s.tabs.map((t, i) => {
+          const cls = t.id === State.activeTab ? 'active' : t.status === 'done' ? 'done' : t.required ? 'error' : 'todo';
+          const sym = t.status === 'done' ? '✓' : (i + 1);
+          const meta = t.id === State.activeTab ? '<span class="progress-meta now">in progress</span>' : t.required ? '<span class="progress-meta req">required</span>' : '<span class="progress-meta">optional</span>';
+          return `<div class="progress-item" data-jump="${t.id}"><span class="progress-bullet ${cls}">${sym}</span><span class="progress-text">${t.label}</span>${meta}</div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="rc">
+      <div class="rc-head"><span class="rc-title">Activity</span><button class="rc-collapse" data-action="viewAudit"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button></div>
+      <div class="audit" id="auditLog">
+        <div class="audit-item"><span class="audit-time">just now</span><div class="audit-body"><b class="audit-actor">You</b> <span class="audit-detail">started a draft</span></div></div>
+        <div class="audit-item"><span class="audit-time">2s ago</span><div class="audit-body"><b class="audit-actor">Engine</b> <span class="audit-detail">autosaved 2 fields</span></div></div>
+      </div>
+    </div>
+
+    <div class="rc" style="background:#FAFBFB;">
+      <div class="rc-head" style="margin-bottom:6px;"><span class="rc-title">Schema</span></div>
+      <div style="font-size:11.5px;color:#5A5C61;line-height:1.5;margin-bottom:10px;">
+        Rendered from <code class="mono" style="background:#fff;padding:1px 5px;border-radius:3px;border:1px solid #ECEDEF;font-size:11px;">${State.schemaId}</code> · ${s.tabs.length} tabs, ${countFields(s)} fields. <a style="color:#2EB273;font-weight:600;cursor:pointer;" data-action="viewSchema">View JSON →</a>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn btn-secondary" data-action="exportRecord" style="height:28px;padding:0 10px;font-size:11.5px;"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button>
+        <button class="btn btn-secondary" data-action="duplicate" style="height:28px;padding:0 10px;font-size:11.5px;"><svg class="ic-sm" viewBox="0 0 24 24" stroke="currentColor"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Duplicate</button>
+      </div>
+    </div>`;
+}
+
+function countFields(s) {
+  let n = 0;
+  s.tabs.forEach(t => t.cards.forEach(c => { n += (c.fields || []).length; }));
+  return n;
+}
+
+/* ── Main render ──────────────────────────────────── */
+function render() {
+  const s = SCHEMA_REGISTRY[State.schemaId];
+  $('#moduleIcon').textContent = s.moduleIcon;
+  $('#moduleName').textContent = s.module;
+  if (!State.activeTab || !s.tabs.find(t => t.id === State.activeTab)) {
+    State.activeTab = s.tabs.find(t => t.status === 'active')?.id || s.tabs[0].id;
+  }
+  renderPageHeader();
+  renderTabContent();
+  renderRail();
+}
+
+/* ── Actions ─────────────────────────────────────── */
+const Actions = {
+  discard() {
+    if (State.dirty === 0) { history.back?.(); toast('Nothing to discard', { tone: 'info' }); return; }
+    openModal({
+      title: 'Discard changes?', sub: `You have ${State.dirty} unsaved change${State.dirty === 1 ? '' : 's'}.`,
+      tone: 'danger',
+      body: '<p>Closing the form will reset all unsaved edits to their last saved state.</p>',
+      actions: [
+        { label: 'Cancel', tone: 'ghost' },
+        { label: 'Discard', tone: 'danger', onClick: () => { const n = State.dirty; State.dirty = 0; updateChangeCount(); toast(`Discarded ${n} change${n === 1 ? '' : 's'}`, { tone: 'info', undo: () => { State.dirty = n; updateChangeCount(); toast('Restored', { tone: 'success' }); } }); } }
+      ]
+    });
+  },
+  saveDraft() {
+    State.dirty = 0;
+    State.lastSave = Date.now();
+    updateChangeCount();
+    $('#autosavedTxt').textContent = 'just now';
+    toast('Draft saved', { tone: 'success' });
+  },
+  save() {
+    const s = SCHEMA_REGISTRY[State.schemaId];
+    const missing = [];
+    s.tabs.forEach(t => t.cards.forEach(c => (c.fields || []).forEach(f => {
+      if (f.required && !(State.values[f.key] ?? f.value)) missing.push(f.label);
+    })));
+    if (missing.length) {
+      toast(`${missing.length} required field${missing.length === 1 ? '' : 's'} missing: ${missing.slice(0, 2).join(', ')}${missing.length > 2 ? '…' : ''}`, { tone: 'error', duration: 4000 });
+      return;
+    }
+    openModal({
+      title: 'Publish this record?', sub: 'It will become visible to users with access.', tone: 'info',
+      body: `<p>${s.recordName} will be created in <b>${s.module}</b> and assigned a permanent ID.</p>`,
+      actions: [
+        { label: 'Cancel', tone: 'ghost' },
+        { label: 'Save & Publish', tone: 'primary', onClick: () => { State.dirty = 0; updateChangeCount(); toast('Published · ID INV-2026-04812 assigned', { tone: 'success' }); } }
+      ]
+    });
+  },
+  saveNext() {
+    const s = SCHEMA_REGISTRY[State.schemaId];
+    const idx = s.tabs.findIndex(t => t.id === State.activeTab);
+    const next = s.tabs[idx + 1];
+    if (!next) { toast('No more tabs', { tone: 'info' }); return; }
+    State.dirty = 0; updateChangeCount();
+    State.activeTab = next.id;
+    s.tabs[idx].status = 'done';
+    render();
+    toast(`Saved · Moved to ${next.label}`, { tone: 'success' });
+  },
+  duplicate() { toast('Record duplicated as draft', { tone: 'success' }); },
+  exportRecord() { toast('Exporting as PDF…', { tone: 'info' }); setTimeout(() => toast('Download ready · scaffolding-coupler.pdf', { tone: 'success' }), 800); },
+  printRecord() { toast('Opening print preview…', { tone: 'info' }); },
+  archive() {
+    openModal({
+      title: 'Archive this record?', sub: 'It will be removed from default lists but kept in the audit log.', tone: 'warn',
+      body: '<p>Archived records can be restored within 30 days. After that they are permanently deleted.</p>',
+      actions: [
+        { label: 'Cancel', tone: 'ghost' },
+        { label: 'Archive', tone: 'danger', onClick: () => toast('Record archived', { tone: 'info', undo: () => toast('Restored', { tone: 'success' }) }) }
+      ]
+    });
+  },
+  generateSku(e, btn) {
+    const key = btn.dataset.key;
+    const sku = 'SKU-' + Math.random().toString(36).slice(2, 6).toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000);
+    State.values[key] = sku;
+    const input = btn.parentElement.querySelector('input');
+    input.value = sku;
+    State.dirty++;
+    updateChangeCount();
+    toast(`SKU generated · ${sku}`, { tone: 'success' });
+  },
+  addRow() { toast('New period row added', { tone: 'success' }); },
+  addRule() { toast('Rule builder opened', { tone: 'info' }); },
+  useTemplate() { toast('Choose template: Standard · Premium · Custom', { tone: 'info' }); },
+  exportTable() { toast('Exporting rate card to CSV…', { tone: 'info' }); },
+  upload() { toast('File picker opened', { tone: 'info' }); },
+  notifications() { toast('You have 3 new notifications', { tone: 'info' }); },
+  help() {
+    openModal({
+      title: 'Form Engine · Help', sub: 'Keyboard shortcuts and tips.', tone: 'info',
+      body: `
+        <p><b>Save</b> · ⌘S / Ctrl+S</p>
+        <p><b>Discard</b> · Esc</p>
+        <p><b>Switch tabs</b> · click or use the progress rail on the right.</p>
+        <p style="margin-top:12px;color:#757575;font-size:12px;">All forms in this product are rendered from JSON schemas. Open <i>View Schema JSON</i> from the sidebar to inspect the source.</p>`,
+      actions: [{ label: 'Got it', tone: 'primary' }]
+    });
+  },
+  cardHelp() { toast('Tip: Fields marked * are required to publish.', { tone: 'info' }); },
+  cardLock() { toast('Section locked · only admins can edit', { tone: 'info' }); },
+  moreMenu() { toggleMenu('#recordMoreMenu'); },
+  focusFirst() { const f = $('.tab-panel .input, #formCol .input'); if (f) f.focus(); },
+  viewSchema() {
+    const s = SCHEMA_REGISTRY[State.schemaId];
+    openModal({
+      title: `Schema · ${State.schemaId}`, sub: 'The same JSON that drives this form drives 100+ others.', tone: 'info',
+      body: `<div class="schema-viewer">${highlightJson(JSON.stringify(s, null, 2))}</div>`,
+      actions: [
+        { label: 'Copy JSON', tone: 'secondary', onClick: () => { navigator.clipboard?.writeText(JSON.stringify(s, null, 2)); toast('Schema copied', { tone: 'success' }); } },
+        { label: 'Close', tone: 'primary' }
+      ]
+    });
+  },
+  viewAudit() {
+    openModal({
+      title: 'Audit Trail', sub: 'Immutable log of every field change.', tone: 'info',
+      body: `<div class="audit">
+        ${[
+          ['10:42:14', 'You', 'changed Base Price 110.00 → 120.00'],
+          ['10:41:58', 'You', 'enabled For Rental'],
+          ['10:41:12', 'You', 'set Parent Item to CAP-COU-0001'],
+          ['10:40:30', 'Engine', 'auto-validated SKU pattern'],
+          ['10:40:02', 'You', 'created draft from Inventory > Items > Add'],
+        ].map(([t, w, d]) => `<div class="audit-item"><span class="audit-time">${t}</span><div class="audit-body"><b class="audit-actor">${w}</b> <span class="audit-detail">${d}</span></div></div>`).join('')}
+      </div>`,
+      actions: [{ label: 'Export log', tone: 'secondary', onClick: () => toast('Audit log exported', { tone: 'success' }) }, { label: 'Close', tone: 'primary' }]
+    });
+  },
+  viewHistory() {
+    openModal({
+      title: 'Version History', sub: 'Restore to any prior saved version.', tone: 'info',
+      body: '<p style="color:#757575;font-size:12.5px;">No prior versions yet — this is the first draft.</p>',
+      actions: [{ label: 'Close', tone: 'primary' }]
+    });
+  }
+};
+
+/* ── Helpers ──────────────────────────────────────── */
+function updateChangeCount() {
+  $('#changeCount').textContent = State.dirty === 0 ? 'all changes saved' : `${State.dirty} unsaved change${State.dirty === 1 ? '' : 's'}`;
+}
+
+function toggleMenu(sel) {
+  const m = $(sel);
+  document.querySelectorAll('.menu.open').forEach(x => { if (x !== m) x.classList.remove('open'); });
+  m.classList.toggle('open');
+}
+
+function highlightJson(s) {
+  return s
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/("(?:[^"\\]|\\.)*")(\s*:)/g, '<span class="k">$1</span>$2')
+    .replace(/: ("(?:[^"\\]|\\.)*")/g, ': <span class="s">$1</span>')
+    .replace(/: (true|false)/g, ': <span class="b">$1</span>')
+    .replace(/: (-?\d+(?:\.\d+)?)/g, ': <span class="n">$1</span>');
+}
+
+/* ── Global event delegation ─────────────────────── */
+document.addEventListener('click', e => {
+  // Schema picker (sidebar)
+  const sbItem = e.target.closest('.sb-item[data-schema]');
+  if (sbItem) {
+    document.querySelectorAll('.sb-item[data-schema]').forEach(x => x.classList.remove('active'));
+    sbItem.classList.add('active');
+    State.schemaId = sbItem.dataset.schema;
+    State.activeTab = null; State.dirty = 0; State.values = {};
+    render(); updateChangeCount();
+    toast(`Loaded schema · ${State.schemaId}`, { tone: 'info' });
+    return;
+  }
+  if (e.target.closest('#viewSchemaBtn')) { Actions.viewSchema(); return; }
+  if (e.target.closest('#addFormBtn')) {
+    openModal({
+      title: 'Register a new form', sub: 'In production, drop a schema file in /schemas and it appears here.', tone: 'info',
+      body: `<p>Each form is a JSON file like this:</p>
+        <div class="schema-viewer" style="max-height:200px;">{
+  <span class="k">"id"</span>: <span class="s">"hr.employee"</span>,
+  <span class="k">"module"</span>: <span class="s">"HR"</span>,
+  <span class="k">"tabs"</span>: [ … ],
+  <span class="k">"actions"</span>: [<span class="s">"save"</span>, <span class="s">"approve"</span>]
+}</div>
+        <p style="margin-top:10px;">No designer, no frontend ticket — the engine renders it.</p>`,
+      actions: [{ label: 'Open schema docs', tone: 'secondary', onClick: () => toast('Opening docs site…', { tone: 'info' }) }, { label: 'Close', tone: 'primary' }]
+    });
+    return;
+  }
+
+  // Tabs
+  const tab = e.target.closest('[data-tab]');
+  if (tab) { State.activeTab = tab.dataset.tab; render(); return; }
+
+  // Rail jump
+  const jump = e.target.closest('[data-jump]');
+  if (jump) { State.activeTab = jump.dataset.jump; render(); return; }
+
+  // Crumb
+  const crumb = e.target.closest('[data-crumb]');
+  if (crumb) { toast(`Navigating to ${crumb.textContent}`, { tone: 'info' }); return; }
+
+  // Actions
+  const actEl = e.target.closest('[data-action]');
+  if (actEl) {
+    e.preventDefault();
+    const act = actEl.dataset.action;
+    if (Actions[act]) Actions[act](e, actEl);
+    else toast(`Action: ${act}`, { tone: 'info' });
+    if (act !== 'moreMenu') document.querySelectorAll('.menu.open').forEach(x => x.classList.remove('open'));
+    return;
+  }
+
+  // Selects
+  const trigger = e.target.closest('[data-trigger]');
+  if (trigger) {
+    const wrap = trigger.closest('.sel-wrap');
+    document.querySelectorAll('.sel-wrap.open').forEach(x => { if (x !== wrap) x.classList.remove('open'); });
+    wrap.classList.toggle('open');
+    return;
+  }
+  const opt = e.target.closest('.sel-opt');
+  if (opt) {
+    const wrap = opt.closest('.sel-wrap');
+    const key = wrap.dataset.select;
+    State.values[key] = opt.dataset.v;
+    State.dirty++;
+    updateChangeCount();
+    wrap.classList.remove('open');
+    renderTabContent();
+    return;
+  }
+
+  // Switches
+  const sw = e.target.closest('[data-switch]');
+  if (sw) {
+    const key = sw.dataset.switch;
+    const wasOn = sw.classList.contains('on');
+    sw.classList.toggle('on');
+    State.values[key] = !wasOn;
+    State.dirty++; updateChangeCount();
+    const txt = document.querySelector(`[data-switch-text="${key}"]`);
+    if (txt) {
+      txt.textContent = wasOn ? 'Inactive' : 'Active';
+      txt.className = wasOn ? 'state-off' : 'state-on';
+    }
+    return;
+  }
+
+  // Toggle tiles
+  const tile = e.target.closest('[data-toggle-tile]');
+  if (tile) {
+    const key = tile.dataset.toggleTile;
+    const wasOn = tile.classList.contains('on');
+    tile.classList.toggle('on');
+    tile.querySelector('.check').classList.toggle('on');
+    State.values[key] = !wasOn;
+    State.dirty++; updateChangeCount();
+    return;
+  }
+
+  // Radio
+  const radio = e.target.closest('[data-radio]');
+  if (radio) {
+    const group = radio.dataset.radio;
+    document.querySelectorAll(`[data-radio="${group}"]`).forEach(r => r.classList.remove('on'));
+    radio.classList.add('on');
+    State.values[group] = radio.dataset.v;
+    State.dirty++; updateChangeCount();
+    return;
+  }
+
+  // Chip remove
+  const chipX = e.target.closest('[data-chip-remove]');
+  if (chipX) { chipX.parentElement.remove(); State.dirty++; updateChangeCount(); return; }
+
+  // Row menus
+  const rowMenu = e.target.closest('[data-row-menu]');
+  if (rowMenu) {
+    const i = rowMenu.dataset.rowMenu;
+    const existing = document.getElementById('rowPop');
+    if (existing) existing.remove();
+    const pop = document.createElement('div');
+    pop.className = 'menu open'; pop.id = 'rowPop';
+    pop.style.cssText = 'position:absolute;right:0;top:100%;';
+    pop.innerHTML = `
+      <div class="menu-item" data-row-act="edit">✎ Edit period</div>
+      <div class="menu-item" data-row-act="dup">⎘ Duplicate</div>
+      <div class="menu-item" data-row-act="move">↕ Move…</div>
+      <div class="menu-sep"></div>
+      <div class="menu-item danger" data-row-act="del">🗑 Remove</div>`;
+    rowMenu.appendChild(pop);
+    pop.addEventListener('click', ev => {
+      const act = ev.target.closest('[data-row-act]')?.dataset.rowAct;
+      if (act === 'del') {
+        const row = rowMenu.closest('tr');
+        row.style.transition = 'opacity .2s';
+        row.style.opacity = '0';
+        setTimeout(() => row.remove(), 200);
+        toast('Period removed', { tone: 'info', undo: () => { row.style.opacity = '1'; toast('Restored', { tone: 'success' }); } });
+      } else if (act === 'edit') toast('Inline edit started', { tone: 'info' });
+      else if (act === 'dup') toast('Row duplicated', { tone: 'success' });
+      else if (act === 'move') toast('Reorder mode · drag to move', { tone: 'info' });
+      pop.remove();
+    });
+    return;
+  }
+
+  // Close menus / popovers on outside click
+  if (!e.target.closest('.menu') && !e.target.closest('[data-action="moreMenu"]')) {
+    document.querySelectorAll('.menu.open').forEach(x => x.classList.remove('open'));
+  }
+  if (!e.target.closest('.sel-wrap')) {
+    document.querySelectorAll('.sel-wrap.open').forEach(x => x.classList.remove('open'));
+  }
+  if (!e.target.closest('#rowPop') && !e.target.closest('[data-row-menu]')) {
+    document.getElementById('rowPop')?.remove();
+  }
+});
+
+/* ── Input changes ────────────────────────────────── */
+document.addEventListener('input', e => {
+  const inp = e.target.closest('input[data-key], textarea[data-key]');
+  if (inp) {
+    State.values[inp.dataset.key] = inp.value;
+    State.dirty++;
+    updateChangeCount();
+    const counter = document.querySelector(`[data-counter="${inp.dataset.key}"]`);
+    if (counter) {
+      const max = counter.textContent.split('/')[1].trim();
+      counter.textContent = `${inp.value.length} / ${max}`;
+    }
+  }
+  // Record name edit
+  const rn = e.target.closest('[data-record-name]');
+  if (rn) { State.dirty++; updateChangeCount(); }
+});
+
+/* ── Chip input enter to add ──────────────────────── */
+document.addEventListener('keydown', e => {
+  const ci = e.target.closest('[data-chip-input]');
+  if (ci && e.key === 'Enter' && ci.value.trim()) {
+    e.preventDefault();
+    const v = ci.value.trim();
+    const wrap = ci.parentElement;
+    const chip = document.createElement('span');
+    chip.className = 'chip green'; chip.innerHTML = `${v}<span class="x" data-chip-remove="${v}">×</span>`;
+    wrap.insertBefore(chip, ci);
+    ci.value = '';
+    State.dirty++; updateChangeCount();
+  }
+  // Shortcuts
+  if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); Actions.saveDraft(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'd' && !e.target.matches('input,textarea')) { e.preventDefault(); Actions.duplicate(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'p') { e.preventDefault(); Actions.printRecord(); }
+  if (e.key === 'Escape') { closeModal(); document.querySelectorAll('.menu.open').forEach(x => x.classList.remove('open')); }
+});
+
+/* ── Search ──────────────────────────────────────── */
+$('#globalSearch')?.addEventListener('focus', () => toast('⌘K opens full search', { tone: 'info', duration: 1800 }));
+
+/* ── Boot ─────────────────────────────────────────── */
+State.values.forRental = true;
+State.values.applyForPrices = true;
+State.values.applyForQty = true;
+State.dirty = 2;
+render();
+updateChangeCount();
+
+// Tick autosave timestamp
+setInterval(() => {
+  const t = $('#autosavedTxt');
+  if (!t) return;
+  const sec = Math.floor((Date.now() - State.lastSave) / 1000);
+  t.textContent = sec < 60 ? `${sec}s ago` : `${Math.floor(sec / 60)}m ago`;
+}, 5000);
+</script>
+</body>
+</html>

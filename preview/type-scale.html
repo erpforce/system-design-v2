@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #fff;
+    color: #1F2125;
+    padding: 24px 28px;
+    letter-spacing: -0.02em;
+  }
+  .table {
+    display: grid;
+    grid-template-columns: 64px 96px 1fr;
+    column-gap: 20px;
+    row-gap: 0;
+    align-items: center;
+  }
+  .table > * {
+    padding: 10px 0;
+    border-bottom: 1px solid #F5F6F5;
+  }
+  .table > *:nth-last-child(-n+3) {
+    border-bottom: none;
+  }
+  .size {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #1F2125;
+    letter-spacing: 0;
+    font-weight: 500;
+  }
+  .weight {
+    font-size: 11px;
+    color: #8E8E93;
+    letter-spacing: -0.01em;
+  }
+  .sample {
+    color: #1F2125;
+    line-height: 1.4;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style></head><body>
+
+  <div class="table">
+    <span class="size">20 / H1</span>
+    <span class="weight">Medium · 500</span>
+    <span class="sample" style="font-size:20px;font-weight:500">Document Master</span>
+
+    <span class="size">18 / H2</span>
+    <span class="weight">SemiBold · 600</span>
+    <span class="sample" style="font-size:18px;font-weight:600">Section Heading</span>
+
+    <span class="size">16 / H3</span>
+    <span class="weight">SemiBold · 600</span>
+    <span class="sample" style="font-size:16px;font-weight:600">Sub-section Title</span>
+
+    <span class="size">14 / H4</span>
+    <span class="weight">Medium · 500</span>
+    <span class="sample" style="font-size:14px;font-weight:500">Field Label</span>
+
+    <span class="size">14 / Body</span>
+    <span class="weight">Regular · 400</span>
+    <span class="sample" style="font-size:14px;font-weight:400">Body text, input value, table cell</span>
+
+    <span class="size">12 / Label</span>
+    <span class="weight">Medium · 500</span>
+    <span class="sample" style="font-size:12px;font-weight:500;color:#656669">Label, status, table header</span>
+
+    <span class="size">12 / Caption</span>
+    <span class="weight">Regular · 400</span>
+    <span class="sample" style="font-size:12px;font-weight:400;color:#8E8E93">Caption, helper text, subtitle</span>
+  </div>
+
+</body></html>

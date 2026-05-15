@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #F4F5F6;
+    color: #1F2125;
+    letter-spacing: -0.02em;
+    padding: 14px;
+  }
+  svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+  button { font-family: inherit; cursor: pointer; }
+
+  .frame {
+    background: #fff;
+    border: 1px solid #ECEDEF;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(15,17,21,0.03);
+  }
+
+  /* ─── Title row ─── */
+  .title-row {
+    display: flex; align-items: center;
+    padding: 10px 14px; gap: 10px;
+    border-bottom: 1px solid #ECEDEF;
+    flex-wrap: wrap;
+  }
+  .ptitle {
+    font-size: 15px; font-weight: 600;
+    color: #1F2125; letter-spacing: -0.025em;
+    white-space: nowrap;
+  }
+  .pcount {
+    display: inline-flex; align-items: center;
+    height: 20px; padding: 0 8px;
+    border-radius: 10px;
+    background: #F2F3F4;
+    font-size: 11px; font-weight: 500;
+    color: #4A4C50;
+    margin-left: 2px;
+  }
+  .ts { flex: 1; }
+  .search-input {
+    height: 32px; flex: 1;
+    min-width: 160px; max-width: 240px;
+    background: #F5F6F7; border: 1px solid transparent;
+    border-radius: 6px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 12px;
+  }
+  .search-input:focus-within { background: #fff; border-color: #2EB273; }
+  .search-input svg { color: #9EA0A3; width: 13px; height: 13px; }
+  .search-input input {
+    border: none; outline: none; background: transparent;
+    font-family: inherit; font-size: 12.5px; color: #1F2125;
+    flex: 1; min-width: 0;
+  }
+  .search-input input::placeholder { color: #9EA0A3; }
+  .btn {
+    height: 32px; padding: 0 10px;
+    border-radius: 6px; border: 1px solid #E0E2E4;
+    background: #fff;
+    font-size: 12.5px; font-weight: 500; color: #1F2125;
+    display: inline-flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+  }
+  .btn:hover { background: #FAFBFB; }
+  .btn svg { width: 12px; height: 12px; color: #4A4C50; stroke-width: 1.8; }
+  .btn-ghost { border-color: transparent; color: #4A4C50; }
+  .btn-ghost:hover { background: #F2F3F4; color: #1F2125; }
+  .btn-primary { background: #2EB273; border-color: #2EB273; color: #fff; }
+  .btn-primary:hover { background: #29A068; }
+  .btn-primary svg { color: #fff; }
+
+  /* ─── Filter chip row ─── */
+  .chips-row {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 14px;
+    background: #FAFBFB;
+    border-bottom: 1px solid #ECEDEF;
+    flex-wrap: wrap;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 26px; padding: 0 4px 0 10px;
+    border-radius: 13px;
+    background: #fff;
+    border: 1px solid #E0E2E4;
+    font-size: 11.5px; color: #1F2125;
+    letter-spacing: -0.01em;
+  }
+  .chip b { font-weight: 600; color: #1F2125; }
+  .chip .k { color: #656669; font-weight: 400; }
+  .chip-x {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #8E8E93;
+  }
+  .chip-x:hover { background: #F2F3F4; color: #1F2125; }
+  .chip-x svg { width: 9px; height: 9px; stroke-width: 2.4; }
+  .chip-add {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 26px; padding: 0 10px;
+    border-radius: 13px;
+    background: transparent;
+    border: 1px dashed #C8CACC;
+    font-size: 11.5px; color: #656669;
+  }
+  .chip-add:hover { background: #fff; border-color: #2EB273; color: #2EB273; }
+  .chip-add svg { width: 9px; height: 9px; stroke-width: 2.4; }
+  .chip-clear {
+    margin-left: auto;
+    background: none; border: none;
+    font-size: 11.5px; color: #2EB273; font-weight: 500;
+  }
+
+  /* ─── Bulk action bar ─── */
+  .bulk-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px;
+    background: #EBF9F2;
+    border-bottom: 1px solid #C8E8D6;
+    color: #1A8A56;
+    font-size: 12px; font-weight: 500;
+  }
+  .bulk-bar b { color: #1A8A56; font-weight: 700; }
+  .bulk-divider { width: 1px; height: 16px; background: #C8E8D6; }
+  .bulk-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 26px; padding: 0 9px;
+    border-radius: 5px; border: none;
+    background: transparent; color: #1A8A56;
+    font-size: 12px; font-weight: 500;
+  }
+  .bulk-btn:hover { background: #DFF4E9; }
+  .bulk-btn svg { width: 12px; height: 12px; stroke-width: 1.8; }
+  .bulk-btn.danger { color: #B7333E; }
+  .bulk-btn.danger:hover { background: #FBE3E5; }
+  .bulk-close { margin-left: auto; }
+
+  /* ─── Table ─── */
+  .scroll-x { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 12.5px;
+    min-width: 1100px;
+  }
+  thead th {
+    height: 36px;
+    background: #FAFBFB;
+    border-bottom: 1px solid #ECEDEF;
+    text-align: left;
+    padding: 0 12px;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #4A4C50;
+    letter-spacing: -0.005em;
+    text-transform: uppercase;
+    position: relative;
+    white-space: nowrap;
+    user-select: none;
+  }
+  thead th .th-inner {
+    display: inline-flex; align-items: center; gap: 5px;
+    cursor: pointer;
+  }
+  .sort {
+    display: inline-flex; flex-direction: column; gap: 1px;
+    color: #C8CACC; line-height: 0;
+  }
+  .sort svg { width: 7px; height: 4px; stroke-width: 2.2; }
+  .sort .active { color: #2EB273; }
+  .th-menu {
+    width: 18px; height: 18px;
+    border-radius: 4px; border: none;
+    background: transparent;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #B0B2B4; opacity: 0; transition: opacity 0.12s;
+    margin-left: 2px;
+  }
+  thead th:hover .th-menu { opacity: 1; }
+  .th-menu:hover { background: #F2F3F4; color: #1F2125; }
+  .th-menu svg { width: 11px; height: 11px; stroke-width: 2; }
+
+  /* Sticky frozen left */
+  thead .col-grip,
+  thead .col-check,
+  thead .col-kebab,
+  thead .col-id {
+    position: sticky;
+    background: #FAFBFB;
+    z-index: 2;
+  }
+  tbody .col-grip,
+  tbody .col-check,
+  tbody .col-kebab,
+  tbody .col-id {
+    position: sticky;
+    background: #fff;
+    z-index: 1;
+  }
+  tbody tr:hover .col-grip,
+  tbody tr:hover .col-check,
+  tbody tr:hover .col-kebab,
+  tbody tr:hover .col-id { background: #FAFBFB; }
+  tbody tr.selected .col-grip,
+  tbody tr.selected .col-check,
+  tbody tr.selected .col-kebab,
+  tbody tr.selected .col-id { background: #F2FBF7; }
+
+  .col-grip  { left: 0;   width: 32px; padding: 0; text-align: center; }
+  .col-check { left: 32px; width: 36px; padding: 0; text-align: center; }
+  .col-kebab { left: 68px; width: 32px; padding: 0; text-align: center; }
+  .col-id    { left: 100px; width: 156px; box-shadow: inset -1px 0 0 #ECEDEF; }
+  thead .col-id    { box-shadow: inset -1px 0 0 #ECEDEF; }
+  thead .col-grip::after, thead .col-check::after, thead .col-kebab::after { display: none; }
+
+  .grip { display: inline-flex; color: #B0B2B4; }
+  .grip svg { width: 11px; height: 11px; stroke-width: 1.8; }
+  .kebab {
+    width: 22px; height: 22px; border-radius: 4px; border: none;
+    background: transparent; color: #9EA0A3;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .kebab:hover { background: #F2F3F4; color: #1F2125; }
+  .kebab.open { background: #E8F6EE; color: #1A8A56; }
+  .kebab svg { width: 13px; height: 13px; stroke-width: 2; }
+
+  /* Row-actions popover */
+  tbody td.col-kebab { overflow: visible; }
+  tbody tr.menu-open { z-index: 10; }
+  tbody tr.menu-open td.col-kebab { z-index: 20; }
+  .row-menu {
+    position: absolute;
+    top: 28px; left: 4px;
+    z-index: 50;
+    width: 188px;
+    background: #fff;
+    border: 1px solid #ECEDEF;
+    border-radius: 8px;
+    box-shadow: 0 12px 32px -8px rgba(15,17,21,0.18), 0 2px 6px rgba(15,17,21,0.06);
+    padding: 5px;
+    font-size: 12.5px;
+    text-align: left;
+  }
+  .row-menu::before {
+    content: '';
+    position: absolute;
+    top: -5px; left: 8px;
+    width: 9px; height: 9px;
+    background: #fff;
+    border-left: 1px solid #ECEDEF;
+    border-top: 1px solid #ECEDEF;
+    transform: rotate(45deg);
+  }
+  .rm-item {
+    width: 100%;
+    display: flex; align-items: center; gap: 10px;
+    height: 30px; padding: 0 10px;
+    border: none; border-radius: 5px; background: transparent;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: #1F2125;
+    text-align: left;
+  }
+  .rm-item:hover { background: #F5F6F7; }
+  .rm-item svg { width: 14px; height: 14px; color: #656669; stroke-width: 1.8; flex-shrink: 0; }
+  .rm-divider { height: 1px; background: #F2F3F4; margin: 4px 4px; }
+  .rm-item.danger { color: #B7333E; }
+  .rm-item.danger svg { color: #B7333E; }
+  .rm-item.danger:hover { background: #FBE3E5; }
+
+  .cb {
+    width: 14px; height: 14px;
+    border: 1.5px solid #C8CACC;
+    border-radius: 3px;
+    display: inline-block;
+    background: #fff;
+    vertical-align: middle;
+  }
+  .cb.checked {
+    background: #2EB273; border-color: #2EB273; position: relative;
+  }
+  .cb.checked::after {
+    content: ''; position: absolute;
+    left: 3px; top: 1px;
+    width: 4px; height: 7px;
+    border: solid #fff; border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg);
+  }
+  .cb.indet {
+    background: #2EB273; border-color: #2EB273; position: relative;
+  }
+  .cb.indet::after {
+    content: ''; position: absolute;
+    left: 2px; top: 5px;
+    width: 8px; height: 2px; background: #fff; border-radius: 1px;
+  }
+
+  /* Group row */
+  .group-row td {
+    background: #F8F9FA;
+    height: 30px;
+    padding: 0 12px;
+    font-size: 11.5px; font-weight: 600;
+    color: #4A4C50;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    border-bottom: 1px solid #ECEDEF;
+    border-top: 1px solid #ECEDEF;
+  }
+  .group-row .gi {
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .gchev { width: 10px; height: 10px; color: #4A4C50; stroke-width: 2; }
+  .gcount {
+    display: inline-flex; align-items: center;
+    height: 16px; padding: 0 6px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #E0E2E4;
+    font-size: 10px; font-weight: 600;
+    color: #4A4C50;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: 4px;
+  }
+
+  tbody td {
+    height: 38px;
+    padding: 0 12px;
+    border-bottom: 1px solid #F2F3F4;
+    color: #1F2125;
+    white-space: nowrap;
+    font-weight: 400;
+  }
+  tbody tr:hover td { background: #FAFBFB; }
+  tbody tr.selected td { background: #F2FBF7; }
+  tbody tr:last-child td { border-bottom: none; }
+  .id-cell {
+    color: #1F2125;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    font-weight: 500;
+  }
+  .id-link {
+    color: #2EB273;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .id-link:hover { text-decoration: underline; }
+  .muted { color: #656669; }
+
+  /* Avatar + name cell */
+  .person {
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .avatar {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 9.5px; font-weight: 600;
+    flex-shrink: 0;
+  }
+  .person-name { font-weight: 500; color: #1F2125; }
+  .person-sub { color: #8E8E93; font-size: 11px; line-height: 1; }
+  .person-meta { display: flex; flex-direction: column; gap: 2px; }
+
+  /* Status pill */
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 22px; padding: 0 9px;
+    border-radius: 4px;
+    font-size: 11px; font-weight: 500;
+  }
+  .pill::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    background: currentColor;
+  }
+  .pill.active { background: #DFF4E9; color: #1A8A56; }
+  .pill.inactive { background: #F2F3F4; color: #656669; }
+  .pill.pending { background: #FEF1DD; color: #B26B0F; }
+  .pill.terminated { background: #FBE3E5; color: #B7333E; }
+
+  /* Inline editable hint */
+  .editable {
+    position: relative;
+    cursor: text;
+  }
+  tbody tr:hover .editable {
+    box-shadow: inset 0 -1px 0 #C8CACC;
+  }
+
+  /* Number / progress */
+  .num { font-variant-numeric: tabular-nums; }
+  .progress {
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .progress-track {
+    width: 64px; height: 5px;
+    border-radius: 3px;
+    background: #F2F3F4;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #2EB273;
+    border-radius: 3px;
+  }
+  .progress-fill.low { background: #E25563; }
+  .progress-fill.mid { background: #E6A532; }
+  .progress-num { font-size: 11.5px; color: #4A4C50; font-weight: 500; min-width: 30px; }
+
+  /* Tag list */
+  .tag-list { display: inline-flex; gap: 4px; }
+  .tag {
+    display: inline-flex; align-items: center;
+    height: 18px; padding: 0 6px;
+    border-radius: 3px;
+    font-size: 10.5px; font-weight: 500;
+    background: #F2F3F4; color: #4A4C50;
+  }
+  .tag.blue { background: #E6EEF9; color: #2A6FDB; }
+  .tag.green { background: #DFF4E9; color: #1A8A56; }
+
+  /* Add column trailing */
+  .col-add {
+    width: 36px;
+    text-align: center;
+  }
+  .add-col-btn {
+    width: 22px; height: 22px;
+    border: 1px dashed #C8CACC;
+    border-radius: 4px;
+    background: transparent;
+    color: #8E8E93;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .add-col-btn:hover { color: #2EB273; border-color: #2EB273; }
+  .add-col-btn svg { width: 9px; height: 9px; stroke-width: 2.2; }
+
+  /* ─── Footer ─── */
+  .footer {
+    display: flex; align-items: center;
+    padding: 8px 12px;
+    gap: 8px;
+    font-size: 11.5px;
+    color: #4A4C50;
+    border-top: 1px solid #ECEDEF;
+    background: #FAFBFB;
+    flex-wrap: wrap;
+  }
+  .density {
+    display: inline-flex; align-items: center;
+    background: #fff;
+    border: 1px solid #E0E2E4;
+    border-radius: 6px;
+    padding: 2px;
+    gap: 1px;
+  }
+  .density-btn {
+    width: 24px; height: 22px;
+    border: none; background: transparent;
+    color: #8E8E93;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 4px;
+  }
+  .density-btn.active { background: #EBF9F2; color: #2EB273; }
+  .density-btn svg { width: 11px; height: 11px; stroke-width: 1.8; }
+
+  .ft-icon {
+    width: 26px; height: 26px;
+    border-radius: 5px; border: none; background: transparent;
+    color: #656669;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .ft-icon:hover { background: #F2F3F4; color: #1F2125; }
+  .ft-icon svg { width: 12px; height: 12px; stroke-width: 1.8; }
+
+  .view-select {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 26px; padding: 0 9px;
+    border-radius: 5px; background: #fff;
+    border: 1px solid #E0E2E4;
+    font-size: 11.5px; font-weight: 500; color: #1F2125;
+  }
+  .view-select svg { width: 10px; height: 10px; color: #8E8E93; stroke-width: 2; }
+
+  .ft-divider { width: 1px; height: 14px; background: #E0E2E4; }
+  .save-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 26px; padding: 0 10px;
+    border-radius: 5px; border: 1px solid transparent;
+    background: #EBF9F2; color: #2EB273;
+    font-size: 11.5px; font-weight: 500;
+    opacity: 0.65;
+  }
+  .save-btn svg { width: 11px; height: 11px; stroke-width: 1.8; }
+
+  .pager { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; }
+  .pl { color: #656669; }
+  .per-page {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 22px; padding: 0 5px 0 7px;
+    border: 1px solid #E0E2E4; border-radius: 4px;
+    background: #fff; font-size: 11.5px; font-weight: 500; color: #1F2125;
+  }
+  .per-page svg { width: 9px; height: 9px; color: #8E8E93; stroke-width: 2; }
+  .arrow-btn {
+    width: 22px; height: 22px; border-radius: 4px;
+    border: 1px solid #E0E2E4; background: #fff;
+    color: #4A4C50;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .arrow-btn:hover { background: #F2F3F4; color: #1F2125; }
+  .arrow-btn:disabled { color: #C8CACC; }
+  .arrow-btn svg { width: 10px; height: 10px; stroke-width: 2; }
+  .page-status { color: #1F2125; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="frame">
+
+  <!-- Title row -->
+  <div class="title-row">
+    <span class="ptitle">Employees</span>
+    <span class="pcount">2,418</span>
+    <span class="ts"></span>
+    <div class="search-input">
+      <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input placeholder="Search by name, ID, email…" />
+    </div>
+    <button class="btn">
+      <svg viewBox="0 0 24 24" stroke="currentColor"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      Group
+    </button>
+    <button class="btn">
+      <svg viewBox="0 0 24 24" stroke="currentColor"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      Filter
+    </button>
+    <button class="btn">
+      <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export
+    </button>
+    <button class="btn btn-primary">
+      <svg viewBox="0 0 24 24" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add employee
+    </button>
+  </div>
+
+  <!-- Filter chip row -->
+  <div class="chips-row">
+    <span class="chip"><span class="k">Company:</span><b>force1</b><button class="chip-x"><svg viewBox="0 0 12 12" stroke="currentColor"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg></button></span>
+    <span class="chip"><span class="k">Status:</span><b>Active, Pending</b><button class="chip-x"><svg viewBox="0 0 12 12" stroke="currentColor"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg></button></span>
+    <span class="chip"><span class="k">Joined:</span><b>last 90 days</b><button class="chip-x"><svg viewBox="0 0 12 12" stroke="currentColor"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg></button></span>
+    <button class="chip-add">
+      <svg viewBox="0 0 12 12" stroke="currentColor"><line x1="6" y1="2" x2="6" y2="10"/><line x1="2" y1="6" x2="10" y2="6"/></svg>
+      Add filter
+    </button>
+    <button class="chip-clear">Clear all</button>
+  </div>
+
+  <!-- Bulk action bar -->
+  <div class="bulk-bar">
+    <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <span><b>3</b> rows selected</span>
+    <span class="bulk-divider"></span>
+    <button class="bulk-btn"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
+    <button class="bulk-btn"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button>
+    <button class="bulk-btn"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Assign</button>
+    <button class="bulk-btn danger"><svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>Archive</button>
+    <button class="bulk-btn bulk-close"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+
+  <!-- Table -->
+  <div class="scroll-x">
+    <table>
+      <colgroup>
+        <col><col><col><col>
+        <col style="min-width:200px"><col style="min-width:120px"><col style="min-width:140px">
+        <col style="min-width:170px"><col style="min-width:130px">
+        <col style="min-width:120px"><col style="min-width:120px">
+        <col style="width:36px">
+      </colgroup>
+      <thead>
+        <tr>
+          <th class="col-grip"><span class="grip"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M7 4v16M17 4v16M4 8h6M14 8h6M4 16h6M14 16h6"/></svg></span></th>
+          <th class="col-check"><span class="cb indet"></span></th>
+          <th class="col-kebab"></th>
+          <th class="col-id"><span class="th-inner">ID <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span><button class="th-menu"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></th>
+          <th><span class="th-inner">Employee <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg class="active" viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span><button class="th-menu"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></th>
+          <th><span class="th-inner">Company</span><button class="th-menu"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></th>
+          <th><span class="th-inner">Department</span><button class="th-menu"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></th>
+          <th><span class="th-inner">Designation / Grade</span><button class="th-menu"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></th>
+          <th><span class="th-inner">Status</span><button class="th-menu"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></th>
+          <th><span class="th-inner">Onboarding</span><button class="th-menu"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></th>
+          <th><span class="th-inner">Tags</span><button class="th-menu"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></th>
+          <th class="col-add"><button class="add-col-btn"><svg viewBox="0 0 12 12" stroke="currentColor"><line x1="6" y1="2" x2="6" y2="10"/><line x1="2" y1="6" x2="10" y2="6"/></svg></button></th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- Group: erp-force -->
+        <tr class="group-row">
+          <td colspan="12">
+            <span class="gi">
+              <svg class="gchev" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              erp-force
+              <span class="gcount">2 employees</span>
+            </span>
+          </td>
+        </tr>
+
+        <tr class="selected menu-open">
+          <td class="col-grip"></td>
+          <td class="col-check"><span class="cb checked"></span></td>
+          <td class="col-kebab">
+            <button class="kebab open"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
+            <div class="row-menu" role="menu">
+              <button class="rm-item" role="menuitem"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>View</button>
+              <button class="rm-item" role="menuitem"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Edit</button>
+              <button class="rm-item" role="menuitem"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Duplicate</button>
+              <button class="rm-item" role="menuitem"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>Export</button>
+              <button class="rm-item" role="menuitem"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>Archive</button>
+              <div class="rm-divider"></div>
+              <button class="rm-item danger" role="menuitem"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Delete</button>
+            </div>
+          </td>
+          <td class="col-id"><a class="id-link" href="#">EMP-2026-000108</a></td>
+          <td>
+            <span class="person">
+              <span class="avatar" style="background:#E25563">TS</span>
+              <span class="person-meta">
+                <span class="person-name">Test Suraj</span>
+                <span class="person-sub">test.suraj@erpforce.ai</span>
+              </span>
+            </span>
+          </td>
+          <td class="muted">erp-force</td>
+          <td class="muted editable">Development</td>
+          <td class="editable">District Operations Liaison</td>
+          <td><span class="pill active">Active</span></td>
+          <td><span class="progress"><span class="progress-track"><span class="progress-fill" style="width:100%"></span></span><span class="progress-num">100%</span></span></td>
+          <td><span class="tag-list"><span class="tag green">FT</span><span class="tag blue">Remote</span></span></td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <td class="col-grip"></td>
+          <td class="col-check"><span class="cb"></span></td>
+          <td class="col-kebab"><button class="kebab"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button></td>
+          <td class="col-id"><a class="id-link" href="#">EMP-2026-000099</a></td>
+          <td>
+            <span class="person">
+              <span class="avatar" style="background:#7B5BD8">R1</span>
+              <span class="person-meta">
+                <span class="person-name">Ram 1</span>
+                <span class="person-sub">ram1@erp-force.com</span>
+              </span>
+            </span>
+          </td>
+          <td class="muted">erp-force</td>
+          <td class="muted editable">Sales</td>
+          <td class="editable">CEO</td>
+          <td><span class="pill active">Active</span></td>
+          <td><span class="progress"><span class="progress-track"><span class="progress-fill" style="width:100%"></span></span><span class="progress-num">100%</span></span></td>
+          <td><span class="tag-list"><span class="tag green">FT</span></span></td>
+          <td></td>
+        </tr>
+
+        <!-- Group: force1 -->
+        <tr class="group-row">
+          <td colspan="12">
+            <span class="gi">
+              <svg class="gchev" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              force1
+              <span class="gcount">7 employees</span>
+            </span>
+          </td>
+        </tr>
+
+        <tr class="selected">
+          <td class="col-grip"></td>
+          <td class="col-check"><span class="cb checked"></span></td>
+          <td class="col-kebab"><button class="kebab"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button></td>
+          <td class="col-id"><a class="id-link" href="#">EMP-2026-000107</a></td>
+          <td>
+            <span class="person">
+              <span class="avatar" style="background:#2A6FDB">PC</span>
+              <span class="person-meta">
+                <span class="person-name">Parth Cee</span>
+                <span class="person-sub">parth.c@force1.io</span>
+              </span>
+            </span>
+          </td>
+          <td class="muted">force1</td>
+          <td class="muted editable">Sales staff</td>
+          <td class="editable">Admin</td>
+          <td><span class="pill active">Active</span></td>
+          <td><span class="progress"><span class="progress-track"><span class="progress-fill" style="width:88%"></span></span><span class="progress-num">88%</span></span></td>
+          <td><span class="tag-list"><span class="tag">PT</span></span></td>
+          <td></td>
+        </tr>
+
+        <tr class="selected">
+          <td class="col-grip"></td>
+          <td class="col-check"><span class="cb checked"></span></td>
+          <td class="col-kebab"><button class="kebab"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button></td>
+          <td class="col-id"><a class="id-link" href="#">EMP-2026-000106</a></td>
+          <td>
+            <span class="person">
+              <span class="avatar" style="background:#1A8A56">PS</span>
+              <span class="person-meta">
+                <span class="person-name">Parth SaleEmp</span>
+                <span class="person-sub">parth.se@force1.io</span>
+              </span>
+            </span>
+          </td>
+          <td class="muted">force1</td>
+          <td class="muted editable">Sales</td>
+          <td class="editable">Force 1 Sale Employee</td>
+          <td><span class="pill pending">Pending</span></td>
+          <td><span class="progress"><span class="progress-track"><span class="progress-fill mid" style="width:60%"></span></span><span class="progress-num">60%</span></span></td>
+          <td><span class="tag-list"><span class="tag green">FT</span></span></td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <td class="col-grip"></td>
+          <td class="col-check"><span class="cb"></span></td>
+          <td class="col-kebab"><button class="kebab"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button></td>
+          <td class="col-id"><a class="id-link" href="#">EMP-2026-000105</a></td>
+          <td>
+            <span class="person">
+              <span class="avatar" style="background:#B26B0F">PS</span>
+              <span class="person-meta">
+                <span class="person-name">Parth Saleemplyee</span>
+                <span class="person-sub">parth.s@force1.io</span>
+              </span>
+            </span>
+          </td>
+          <td class="muted">force1</td>
+          <td class="muted editable">Sales</td>
+          <td class="editable">Force 1 Sale Employee</td>
+          <td><span class="pill pending">Pending</span></td>
+          <td><span class="progress"><span class="progress-track"><span class="progress-fill low" style="width:25%"></span></span><span class="progress-num">25%</span></span></td>
+          <td><span class="tag-list"><span class="tag">PT</span></span></td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <td class="col-grip"></td>
+          <td class="col-check"><span class="cb"></span></td>
+          <td class="col-kebab"><button class="kebab"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button></td>
+          <td class="col-id"><a class="id-link" href="#">EMP-2026-000104</a></td>
+          <td>
+            <span class="person">
+              <span class="avatar" style="background:#E25563">PS</span>
+              <span class="person-meta">
+                <span class="person-name">Parth SalesTL</span>
+                <span class="person-sub">parth.tl@force1.io</span>
+              </span>
+            </span>
+          </td>
+          <td class="muted">force1</td>
+          <td class="muted editable">Sales</td>
+          <td class="editable">Force Sales TL</td>
+          <td><span class="pill active">Active</span></td>
+          <td><span class="progress"><span class="progress-track"><span class="progress-fill" style="width:100%"></span></span><span class="progress-num">100%</span></span></td>
+          <td><span class="tag-list"><span class="tag green">FT</span><span class="tag blue">Lead</span></span></td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <td class="col-grip"></td>
+          <td class="col-check"><span class="cb"></span></td>
+          <td class="col-kebab"><button class="kebab"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button></td>
+          <td class="col-id"><a class="id-link" href="#">EMP-2026-000103</a></td>
+          <td>
+            <span class="person">
+              <span class="avatar" style="background:#7B5BD8">PH</span>
+              <span class="person-meta">
+                <span class="person-name">Parth HR</span>
+                <span class="person-sub">parth.hr@force1.io</span>
+              </span>
+            </span>
+          </td>
+          <td class="muted">force1</td>
+          <td class="muted editable">HR</td>
+          <td class="editable">Force HR Manager</td>
+          <td><span class="pill active">Active</span></td>
+          <td><span class="progress"><span class="progress-track"><span class="progress-fill" style="width:100%"></span></span><span class="progress-num">100%</span></span></td>
+          <td><span class="tag-list"><span class="tag green">FT</span></span></td>
+          <td></td>
+        </tr>
+
+        <tr>
+          <td class="col-grip"></td>
+          <td class="col-check"><span class="cb"></span></td>
+          <td class="col-kebab"><button class="kebab"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button></td>
+          <td class="col-id"><a class="id-link" href="#">EMP-2026-000102</a></td>
+          <td>
+            <span class="person">
+              <span class="avatar" style="background:#656669">PS</span>
+              <span class="person-meta">
+                <span class="person-name">Parth Sales</span>
+                <span class="person-sub">parth.sm@force1.io</span>
+              </span>
+            </span>
+          </td>
+          <td class="muted">force1</td>
+          <td class="muted editable">Sales</td>
+          <td class="editable">Force Sale Manager</td>
+          <td><span class="pill inactive">Inactive</span></td>
+          <td><span class="progress"><span class="progress-track"><span class="progress-fill" style="width:100%"></span></span><span class="progress-num">100%</span></span></td>
+          <td><span class="tag-list"><span class="tag">PT</span></span></td>
+          <td></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="density" role="group" aria-label="Row density">
+      <button class="density-btn" aria-label="Compact"><svg viewBox="0 0 24 24" stroke="currentColor"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>
+      <button class="density-btn active" aria-label="Default"><svg viewBox="0 0 24 24" stroke="currentColor"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg></button>
+      <button class="density-btn" aria-label="Comfortable"><svg viewBox="0 0 24 24" stroke="currentColor"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>
+    </div>
+    <button class="ft-icon" aria-label="Columns">
+      <svg viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="6" height="18"/><rect x="11" y="3" width="6" height="18"/></svg>
+    </button>
+    <span class="view-select">
+      Default view
+      <svg viewBox="0 0 12 8" stroke="currentColor"><polyline points="1 1 6 6 11 1"/></svg>
+    </span>
+    <span class="ft-divider"></span>
+    <button class="save-btn">
+      Auto-saved
+      <svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+    </button>
+
+    <div class="pager">
+      <span class="pl">Rows per page</span>
+      <span class="per-page">25 <svg viewBox="0 0 12 8" stroke="currentColor"><polyline points="1 1 6 6 11 1"/></svg></span>
+      <span class="pl"><b>1–25</b> of 2,418</span>
+      <button class="arrow-btn" disabled><svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg></button>
+      <button class="arrow-btn"><svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <span class="page-status">Page 1 of 97</span>
+      <button class="arrow-btn"><svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <button class="arrow-btn"><svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const ROW_MENU_HTML = `
+    <div class="row-menu" role="menu">
+      <button class="rm-item" role="menuitem"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>View</button>
+      <button class="rm-item" role="menuitem"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Edit</button>
+      <button class="rm-item" role="menuitem"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Duplicate</button>
+      <button class="rm-item" role="menuitem"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>Export</button>
+      <button class="rm-item" role="menuitem"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>Archive</button>
+      <div class="rm-divider"></div>
+      <button class="rm-item danger" role="menuitem"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Delete</button>
+    </div>
+  `;
+  function closeAllRowMenus() {
+    document.querySelectorAll('tbody .row-menu').forEach(m => m.remove());
+    document.querySelectorAll('.kebab.open').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('tr.menu-open').forEach(t => t.classList.remove('menu-open'));
+  }
+  document.body.addEventListener('click', e => {
+    const cb = e.target.closest('.cb');
+    if (cb) cb.classList.toggle('checked');
+    const dn = e.target.closest('.density-btn');
+    if (dn) {
+      dn.parentElement.querySelectorAll('.density-btn').forEach(b => b.classList.remove('active'));
+      dn.classList.add('active');
+    }
+    const kb = e.target.closest('.kebab');
+    if (kb) {
+      const wasOpen = kb.classList.contains('open');
+      closeAllRowMenus();
+      if (!wasOpen) {
+        kb.classList.add('open');
+        kb.closest('tr').classList.add('menu-open');
+        kb.insertAdjacentHTML('afterend', ROW_MENU_HTML);
+      }
+      e.stopPropagation();
+      return;
+    }
+    if (!e.target.closest('.row-menu')) closeAllRowMenus();
+  });
+</script>
+
+</body>
+</html>

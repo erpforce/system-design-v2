@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #fff; padding: 20px; }
+.section { margin-bottom: 18px; }
+.section-label { font-size: 10px; font-weight: 500; color: #8E8E93; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+.scale { display: flex; gap: 3px; height: 52px; border-radius: 4px; overflow: hidden; }
+.step { flex: 1; position: relative; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px; }
+.step-label { font-size: 9px; font-family: monospace; color: rgba(0,0,0,0.4); }
+.step-label.light { color: rgba(255,255,255,0.7); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.swatch { border-radius: 4px; overflow: hidden; min-width: 80px; flex: 1; border: 1px solid #F0F0F0; }
+.sc { height: 44px; }
+.si { padding: 6px 8px; background: #fff; }
+.sn { font-size: 10px; font-weight: 500; color: #1F2125; }
+.sh { font-size: 9px; color: #9E9E9E; font-family: monospace; margin-top: 1px; }
+</style></head><body>
+
+<div class="section">
+  <div class="section-label">Primary Scale</div>
+  <div class="scale">
+    <div class="step" style="background:#E8F5F0"><span class="step-label">100</span></div>
+    <div class="step" style="background:#D1EBE1"><span class="step-label">200</span></div>
+    <div class="step" style="background:#BAE1D2"><span class="step-label">300</span></div>
+    <div class="step" style="background:#A3D7C3"><span class="step-label">400</span></div>
+    <div class="step" style="background:#8CCDB4"><span class="step-label">500</span></div>
+    <div class="step" style="background:#75C3A5"><span class="step-label">600</span></div>
+    <div class="step" style="background:#54CC96"><span class="step-label">700</span></div>
+    <div class="step" style="background:#2EB273"><span class="step-label light">800 ★</span></div>
+    <div class="step" style="background:#1A6B44"><span class="step-label light">900</span></div>
+  </div>
+  <div class="row">
+    <div class="swatch"><div class="sc" style="background:#2EB273"></div><div class="si"><div class="sn">Primary 800</div><div class="sh">#2EB273</div></div></div>
+    <div class="swatch"><div class="sc" style="background:#54CC96"></div><div class="si"><div class="sn">Primary 700</div><div class="sh">#54CC96</div></div></div>
+    <div class="swatch"><div class="sc" style="background:#E8F5F0"></div><div class="si"><div class="sn">Primary 100</div><div class="sh">#E8F5F0</div></div></div>
+    <div class="swatch"><div class="sc" style="background:#1A6B44"></div><div class="si"><div class="sn">Primary 900</div><div class="sh">#1A6B44</div></div></div>
+  </div>
+</div>
+
+</body></html>

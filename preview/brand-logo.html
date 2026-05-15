@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #fff; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+.row { display: flex; gap: 12px; align-items: stretch; }
+.label { font-size: 10px; font-weight: 500; color: #9E9E9E; letter-spacing: 0.06em; text-transform: uppercase; min-width: 64px; display: flex; align-items: center; }
+.bg { padding: 18px 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex: 1; gap: 24px; }
+.bg-light  { background: #fff; border: 1px solid #F0F0F0; }
+.bg-subtle { background: #F9F9F9; border: 1px solid #F0F0F0; }
+.bg-dark   { background: #212121; }
+.bg-green  { background: #2EB273; }
+img { height: 36px; width: auto; }
+img.mark { height: 40px; }
+.divider { width: 1px; background: #E0E0E0; margin: 4px 0; }
+.divider-light { background: rgba(255,255,255,0.2); }
+</style></head><body>
+
+<div class="row">
+  <span class="label">Light</span>
+  <div class="bg bg-light">
+    <img src="../assets/ERPForce_Primary-Logo-TM.png" alt="ERPForce">
+    <div class="divider"></div>
+    <img class="mark" src="../assets/ERPForce_Logo-Mark.png" alt="ERP mark">
+  </div>
+</div>
+
+<div class="row">
+  <span class="label">Subtle</span>
+  <div class="bg bg-subtle">
+    <img src="../assets/ERPForce_Primary-Logo-TM.png" alt="ERPForce">
+    <div class="divider"></div>
+    <img class="mark" src="../assets/ERPForce_Logo-Mark.png" alt="ERP mark">
+  </div>
+</div>
+
+<div class="row">
+  <span class="label">Dark</span>
+  <div class="bg bg-dark">
+    <img src="../assets/ERPForce_Primary-Logo-TM.png" alt="ERPForce" style="filter:brightness(0) invert(1)">
+    <div class="divider divider-light"></div>
+    <img class="mark" src="../assets/ERPForce_Logo-Mark.png" alt="ERP mark" style="filter:brightness(0) invert(1)">
+  </div>
+</div>
+
+<div class="row">
+  <span class="label">Green</span>
+  <div class="bg bg-green">
+    <img src="../assets/ERPForce_Primary-Logo-TM.png" alt="ERPForce" style="filter:brightness(0) invert(1)">
+    <div class="divider divider-light"></div>
+    <img class="mark" src="../assets/ERPForce_Logo-Mark.png" alt="ERP mark" style="filter:brightness(0) invert(1)">
+  </div>
+</div>
+
+</body></html>

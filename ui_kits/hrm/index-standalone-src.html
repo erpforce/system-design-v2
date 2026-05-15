@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ERPForce HRMS — Employee Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #F4F5F6;
+    color: #1F2125;
+    letter-spacing: -0.02em;
+    overflow: hidden;
+  }
+  svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+  button { font-family: inherit; cursor: pointer; }
+
+  .app { display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
+
+  /* ─────── SIDEBAR ─────── */
+  .sb {
+    background: #FBFBFB;
+    border-right: 1px solid #ECEDEF;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .sb-brand {
+    height: 64px;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+  }
+  .brand-stack { display: flex; flex-direction: column; gap: 2px; }
+  .brand { display: flex; align-items: baseline; gap: 0; line-height: 1; }
+  .brand-erp { font-size: 22px; font-weight: 700; color: #2EB273; letter-spacing: -0.04em; }
+  .brand-force { font-size: 22px; font-weight: 700; color: #001866; letter-spacing: -0.04em; }
+  .brand-tm { font-size: 9px; color: #001866; margin-left: 1px; align-self: flex-start; margin-top: 2px; }
+  .brand-tag { font-size: 8.5px; color: #8E8E93; letter-spacing: 0.04em; line-height: 1; margin-top: 4px; }
+
+  .sb-collapse {
+    position: absolute;
+    top: 24px; right: -12px;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid #ECEDEF;
+    display: flex; align-items: center; justify-content: center;
+    color: #656669;
+    z-index: 5;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .sb-collapse:hover { color: #1F2125; }
+  .sb-collapse svg { width: 11px; height: 11px; stroke-width: 2; }
+
+  .sb-search {
+    margin: 6px 14px 8px;
+    height: 36px;
+    background: #fff;
+    border: 1px solid #E0E2E4;
+    border-radius: 8px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 12px;
+  }
+  .sb-search:focus-within { border-color: #2EB273; }
+  .sb-search svg { color: #9EA0A3; width: 14px; height: 14px; flex-shrink: 0; }
+  .sb-search input {
+    flex: 1; min-width: 0;
+    border: none; outline: none; background: transparent;
+    font-family: inherit; font-size: 13px; color: #1F2125;
+  }
+  .sb-search input::placeholder { color: #9EA0A3; }
+
+  .sb-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 8px 8px;
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .sb-nav::-webkit-scrollbar { width: 6px; }
+  .sb-nav::-webkit-scrollbar-thumb { background: #E0E2E4; border-radius: 3px; }
+
+  .nav-item {
+    height: 38px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 12px;
+    border-radius: 8px;
+    color: #1F2125;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    user-select: none;
+    border: none; background: transparent; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: #F2F3F4; }
+  .nav-item .ic { width: 16px; height: 16px; color: #4A4C50; flex-shrink: 0; display: flex; }
+  .nav-item.parent-active .ic { color: #2EB273; }
+  .nav-item .lbl { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nav-item .chev { width: 12px; height: 12px; color: #B0B2B4; transition: transform 0.18s; }
+  .nav-item .chev.open { transform: rotate(180deg); color: #4A4C50; }
+
+  .nav-children {
+    position: relative;
+    margin: 2px 0 4px;
+    padding-left: 28px;
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .nav-children::before {
+    content: '';
+    position: absolute;
+    left: 20px; top: 2px; bottom: 2px;
+    width: 1.5px;
+    background: #E0E2E4;
+    border-radius: 1px;
+  }
+  .nav-child {
+    position: relative;
+    height: 32px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 10px;
+    border-radius: 8px;
+    color: #4A4C50;
+    font-size: 12.5px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    border: none; background: transparent; width: 100%; text-align: left;
+  }
+  .nav-child::before {
+    content: '';
+    position: absolute;
+    left: -8px; top: 50%;
+    width: 8px; height: 1.5px;
+    background: #E0E2E4;
+    border-radius: 1px;
+  }
+  .nav-child:hover { background: #F2F3F4; color: #1F2125; }
+  .nav-child.active {
+    background: #EBF9F2;
+    color: #2EB273;
+    font-weight: 500;
+  }
+  .nav-child.active::before { background: #2EB273; }
+  .nav-child .ch-lbl { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .sb-foot {
+    height: 48px;
+    border-top: 1px solid #ECEDEF;
+    background: #FBFBFB;
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: #8E8E93;
+  }
+  .sb-foot .heart { color: #E25563; font-size: 13px; }
+  .sb-foot b { font-weight: 700; }
+  .sb-foot .erp { color: #2EB273; }
+  .sb-foot .force { color: #001866; }
+  .sb-foot sup { font-size: 7px; }
+
+  /* ─────── MAIN ─────── */
+  .main {
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    background: #F4F5F6;
+  }
+
+  /* App bar */
+  .app-bar {
+    height: 60px;
+    background: #fff;
+    border-bottom: 1px solid #ECEDEF;
+    display: flex; align-items: center;
+    padding: 0 20px;
+    gap: 10px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  /* ── App / Module switcher (waffle) ── */
+  .app-switch {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    color: #4A4C50;
+    position: relative;
+  }
+  .app-switch:hover { background: #F2F3F4; color: #1F2125; }
+  .app-switch.open { background: #EBF9F2; color: #1A8A56; border-color: #C8EBD8; }
+  .app-switch svg { width: 18px; height: 18px; }
+
+  /* Crumb path — module chip + breadcrumb in one strip */
+  .crumb-path {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 36px;
+    padding: 0 4px;
+    border-radius: 9px;
+    min-width: 0;
+  }
+  .mod-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    height: 28px;
+    padding: 0 10px 0 4px;
+    border-radius: 7px;
+    background: #F2F8F5;
+    border: 1px solid #DCEFE4;
+    color: #1A6B43;
+    cursor: pointer;
+  }
+  .mod-chip:hover { background: #E6F5EC; }
+  .mod-chip .mp-icon {
+    width: 22px; height: 22px;
+    border-radius: 5px;
+    background: linear-gradient(135deg, #2EB273 0%, #1A8A56 100%);
+    color: #fff;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .mod-chip .mp-icon svg { width: 12px; height: 12px; stroke-width: 2; }
+  .mod-chip .mp-name { font-size: 12.5px; font-weight: 600; letter-spacing: -0.01em; }
+  .cp-sep { width: 11px; height: 11px; color: #C8CACC; stroke-width: 2; flex-shrink: 0; }
+  .cp-link {
+    border: none; background: transparent;
+    font: inherit; font-size: 12.5px; color: #6B6D70;
+    padding: 4px 6px; border-radius: 5px; cursor: pointer;
+    letter-spacing: -0.01em;
+  }
+  .cp-link:hover { color: #1F2125; background: #F5F6F7; }
+  .cp-current { font-size: 12.5px; color: #1F2125; font-weight: 600; padding: 4px 6px; letter-spacing: -0.01em; }
+
+  /* App switcher popover */
+  .as-pop {
+    position: absolute; top: 56px; left: 16px;
+    width: 560px;
+    background: #fff;
+    border: 1px solid #ECEDEF;
+    border-radius: 14px;
+    box-shadow: 0 20px 48px -12px rgba(15,17,21,0.22), 0 4px 12px rgba(15,17,21,0.06);
+    z-index: 70;
+    overflow: hidden;
+    display: none;
+  }
+  .as-pop.open { display: block; }
+  .as-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #F2F3F4;
+  }
+  .as-head input {
+    flex: 1; min-width: 0;
+    border: 1px solid #ECEDEF;
+    background: #FAFBFB;
+    height: 32px; padding: 0 12px 0 32px;
+    border-radius: 7px;
+    font: inherit; font-size: 12.5px; color: #1F2125;
+    outline: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%239EA0A3' stroke-width='2' stroke-linecap='round'><circle cx='6.5' cy='6.5' r='4.5'/><line x1='10' y1='10' x2='13' y2='13'/></svg>");
+    background-repeat: no-repeat;
+    background-position: 10px center;
+  }
+  .as-head .as-pin {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11.5px; color: #8E8E93;
+    padding: 4px 8px; border-radius: 6px;
+    background: #FAFBFB; border: 1px solid #ECEDEF;
+  }
+  .as-body { padding: 8px 8px 4px; max-height: 480px; overflow-y: auto; }
+  .as-section { padding: 6px 6px 0; }
+  .as-section + .as-section { margin-top: 4px; }
+  .as-section-label {
+    font-size: 10.5px; font-weight: 700;
+    color: #8E8E93;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 6px 6px 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .as-section-label .badge {
+    background: #F2F3F4; color: #8E8E93;
+    font-weight: 600; font-size: 10px;
+    padding: 1px 5px; border-radius: 8px;
+    letter-spacing: 0;
+  }
+  .as-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+  }
+  .as-tile {
+    position: relative;
+    display: flex; flex-direction: column;
+    align-items: flex-start; gap: 6px;
+    padding: 12px 10px 10px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    background: transparent;
+    text-align: left;
+    transition: background .12s, border-color .12s;
+  }
+  .as-tile:hover { background: #F8F9FA; }
+  .as-tile.active { background: #EBF9F2; border-color: #C8EBD8; }
+  .as-tile.locked { opacity: 0.55; }
+  .as-tile-icon {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: var(--tile-bg, #F2F3F4);
+    color: var(--tile-fg, #4A4C50);
+    display: grid; place-items: center;
+  }
+  .as-tile-icon svg { width: 15px; height: 15px; stroke-width: 1.9; }
+  .as-tile-name { font-size: 12.5px; font-weight: 600; color: #1F2125; letter-spacing: -0.01em; line-height: 1.2; }
+  .as-tile-meta { font-size: 10.5px; color: #8E8E93; line-height: 1.3; }
+  .as-tile .pin {
+    position: absolute; top: 8px; right: 8px;
+    color: #C8CACC; opacity: 0;
+    transition: opacity .12s, color .12s;
+  }
+  .as-tile:hover .pin { opacity: 1; }
+  .as-tile.pinned .pin { opacity: 1; color: #2EB273; }
+  .as-tile .pin svg { width: 12px; height: 12px; stroke-width: 2; }
+  .as-tile .lock-ic { position: absolute; top: 10px; right: 10px; color: #B0B2B4; }
+  .as-tile .lock-ic svg { width: 11px; height: 11px; stroke-width: 2; }
+  .as-tile .new-pill { font-size: 9.5px; font-weight: 700; color: #fff; background: #2EB273; padding: 1px 5px; border-radius: 8px; letter-spacing: 0.04em; }
+  .as-tile-row { display: flex; align-items: center; gap: 6px; }
+  .as-foot {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px;
+    border-top: 1px solid #F2F3F4;
+    background: #FAFBFB;
+    font-size: 11.5px; color: #8E8E93;
+  }
+  .as-foot .right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+  .as-foot a { color: #2EB273; font-weight: 600; cursor: pointer; }
+  .as-foot a:hover { text-decoration: underline; }
+
+  /* Divider between switcher and crumbs */
+  .ab-divider { width: 1px; height: 22px; background: #ECEDEF; margin: 0 2px; }
+
+  .back-btn {
+    width: 32px; height: 32px;
+    border-radius: 7px;
+    border: none; background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    color: #4A4C50;
+  }
+  .back-btn:hover { background: #F2F3F4; color: #1F2125; }
+  .back-btn svg { width: 15px; height: 15px; stroke-width: 1.8; }
+
+  .crumb {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12.5px; color: #8E8E93;
+    min-width: 0;
+  }
+  .crumb svg { width: 11px; height: 11px; color: #C8CACC; stroke-width: 2; flex-shrink: 0; }
+  .crumb .c-current { color: #1F2125; font-weight: 500; }
+  .crumb .c-link { color: #4A4C50; cursor: pointer; }
+  .crumb .c-link:hover { color: #1F2125; }
+
+  /* Global search w/ autocomplete — compact, expands on focus */
+  .gs { width: 280px; margin-left: auto; position: relative; transition: width .2s ease; }
+  .gs.open { width: 460px; }
+  .gs-input {
+    width: 100%; height: 36px;
+    background: #F5F6F7; border: 1px solid transparent;
+    border-radius: 9px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 12px;
+    transition: background .15s, border-color .15s, box-shadow .15s;
+  }
+  .gs.open .gs-input,
+  .gs-input:focus-within { background: #fff; border-color: #2EB273; box-shadow: 0 0 0 3px rgba(46,178,115,0.12); }
+  .gs-input > svg { width: 14px; height: 14px; color: #8E8E93; stroke-width: 1.8; flex-shrink: 0; }
+  .gs-input input { border: none; outline: none; background: transparent; font: inherit; font-size: 13px; color: #1F2125; flex: 1; min-width: 0; }
+  .gs-input input::placeholder { color: #9EA0A3; }
+  .gs-kbd { display: inline-flex; align-items: center; gap: 2px; font-size: 10.5px; color: #8E8E93; background: #fff; border: 1px solid #ECEDEF; border-radius: 4px; padding: 1px 5px; font-weight: 600; }
+  .gs.open .gs-kbd { display: none; }
+  .gs-pop { display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #fff; border: 1px solid #ECEDEF; border-radius: 10px; box-shadow: 0 12px 32px -8px rgba(15,17,21,0.16), 0 2px 6px rgba(15,17,21,0.05); padding: 6px; z-index: 60; max-height: 460px; overflow: auto; }
+  .gs.open .gs-pop { display: block; }
+  .gs-group { padding: 4px 0; }
+  .gs-group + .gs-group { border-top: 1px solid #F2F3F4; margin-top: 2px; padding-top: 6px; }
+  .gs-group-label { font-size: 10.5px; font-weight: 600; color: #8E8E93; text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 10px 4px; display: flex; align-items: center; gap: 6px; }
+  .gs-group-label .count { color: #C8CACC; font-weight: 500; letter-spacing: 0; text-transform: none; }
+  .gs-item { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 6px; cursor: pointer; }
+  .gs-item:hover, .gs-item.focused { background: #F5F6F7; }
+  .gs-item.focused { background: #EBF9F2; }
+  .gs-thumb { width: 26px; height: 26px; border-radius: 6px; background: #F2F3F4; color: #4A4C50; display: grid; place-items: center; flex-shrink: 0; font-size: 11px; font-weight: 600; }
+  .gs-thumb.av { background: linear-gradient(135deg, #2EB273, #1A8A56); color: #fff; }
+  .gs-thumb.doc { background: #E8EAF6; color: #3949AB; }
+  .gs-thumb.act { background: #FFF3CC; color: #8A6D00; }
+  .gs-thumb svg { width: 13px; height: 13px; stroke-width: 1.8; }
+  .gs-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .gs-title { font-size: 12.5px; color: #1F2125; font-weight: 500; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gs-title mark { background: transparent; color: #1A8A56; font-weight: 700; }
+  .gs-meta { font-size: 11px; color: #8E8E93; }
+  .gs-trail { font-size: 10.5px; color: #8E8E93; padding: 2px 7px; border-radius: 10px; background: #F5F6F7; flex-shrink: 0; }
+  .gs-foot { display: flex; align-items: center; gap: 14px; padding: 8px 10px 4px; border-top: 1px solid #F2F3F4; margin-top: 4px; font-size: 10.5px; color: #8E8E93; }
+  .gs-foot .gs-kbd { background: #F5F6F7; }
+  .gs-foot .right { margin-left: auto; color: #2EB273; font-weight: 600; }
+
+  .ab-spacer { display: none; }
+
+  .lang {
+    display: flex; align-items: center; gap: 8px;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid #E0E2E4;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 13px;
+    color: #1F2125;
+  }
+  .lang:hover { background: #FAFBFB; }
+  .lang svg { width: 11px; height: 11px; color: #8E8E93; stroke-width: 2; }
+
+  .icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: none; background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    color: #4A4C50; position: relative;
+  }
+  .icon-btn:hover { background: #F2F3F4; color: #1F2125; }
+  .icon-btn svg { width: 17px; height: 17px; stroke-width: 1.7; }
+  .dot {
+    position: absolute; top: 9px; right: 9px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #E25563; border: 1.5px solid #fff;
+  }
+
+  .v-divider { width: 1px; height: 22px; background: #ECEDEF; }
+
+  .user {
+    display: flex; align-items: center; gap: 10px;
+    padding: 4px 10px 4px 4px;
+    border-radius: 8px;
+    border: none; background: transparent;
+  }
+  .user:hover { background: #F2F3F4; }
+  .user-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2EB273 0%, #1A8A56 100%);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11.5px; font-weight: 600;
+    flex-shrink: 0;
+  }
+  .user-meta { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; line-height: 1; }
+  .user-name { font-size: 13px; font-weight: 600; color: #1F2125; letter-spacing: -0.02em; }
+  .user-role { font-size: 11px; color: #9EA0A3; }
+
+  /* Page area */
+  .page {
+    flex: 1;
+    overflow: auto;
+    padding: 24px;
+  }
+
+  /* Page header */
+  .page-head {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 18px;
+  }
+  .page-title-block { flex: 1; }
+  .page-title {
+    font-size: 22px; font-weight: 600;
+    color: #1F2125; letter-spacing: -0.03em;
+    line-height: 1.15;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .page-count {
+    display: inline-flex; align-items: center;
+    height: 22px; padding: 0 9px;
+    border-radius: 11px;
+    background: #fff;
+    border: 1px solid #ECEDEF;
+    font-size: 12px; font-weight: 500;
+    color: #4A4C50;
+    letter-spacing: -0.01em;
+  }
+  .page-sub {
+    font-size: 13px; color: #656669;
+    margin-top: 4px;
+    letter-spacing: -0.015em;
+  }
+
+  /* ─────── Page-level toolbar (above card) ─────── */
+  .page-toolbar {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .view-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    height: 32px; padding: 0 12px;
+    background: transparent;
+    border: none;
+    font-size: 13px; font-weight: 500; color: #2EB273;
+  }
+  .view-pill svg { width: 14px; height: 14px; stroke-width: 1.8; }
+  .view-pill .vp-divider { width: 1px; height: 18px; background: #ECEDEF; margin: 0 2px; }
+  .view-add {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 32px; padding: 0 10px;
+    background: transparent; border: none;
+    color: #4A4C50; font-size: 13px; font-weight: 500;
+  }
+  .view-add:hover { color: #1F2125; }
+  .view-add svg { width: 12px; height: 12px; stroke-width: 2.2; }
+  .pt-spacer { flex: 1; }
+  .pt-search {
+    height: 32px; width: 240px;
+    background: #F5F6F7; border: 1px solid transparent;
+    border-radius: 6px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 12px;
+  }
+  .pt-search:focus-within { background: #fff; border-color: #2EB273; }
+  .pt-search svg { color: #9EA0A3; width: 13px; height: 13px; }
+  .pt-search input {
+    border: none; outline: none; background: transparent;
+    font-family: inherit; font-size: 12.5px; color: #1F2125;
+    flex: 1; min-width: 0;
+  }
+  .pt-search input::placeholder { color: #9EA0A3; }
+  .btn {
+    height: 32px; padding: 0 12px;
+    border-radius: 6px; border: 1px solid #E0E2E4;
+    background: #fff;
+    font-size: 12.5px; font-weight: 500; color: #1F2125;
+    display: inline-flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+  }
+  .btn:hover { background: #FAFBFB; }
+  .btn svg { width: 12px; height: 12px; color: #4A4C50; stroke-width: 1.8; }
+  .btn-primary { background: #2EB273; border-color: #2EB273; color: #fff; }
+  .btn-primary:hover { background: #29A068; }
+  .btn-primary svg { color: #fff; stroke-width: 2.4; }
+  .icon-only {
+    width: 32px; height: 32px; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 6px; border: 1px solid #E0E2E4; background: #fff;
+    color: #4A4C50;
+  }
+  .icon-only:hover { background: #FAFBFB; color: #1F2125; }
+  .icon-only svg { width: 14px; height: 14px; stroke-width: 1.8; }
+
+  /* ─────── Card ─────── */
+  .card {
+    background: #fff;
+    border: 1px solid #ECEDEF;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(15,17,21,0.03);
+  }
+
+  /* Filter chips row */
+  .filter-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #ECEDEF;
+    background: #FAFBFB;
+    flex-wrap: wrap;
+  }
+  .filter-row .lbl {
+    font-size: 12px; font-weight: 500; color: #4A4C50;
+  }
+  .fchip {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 26px; padding: 0 4px 0 0;
+    background: #fff;
+    border: 1px solid #E0E2E4;
+    border-radius: 13px;
+    font-size: 11.5px;
+    letter-spacing: -0.01em;
+    overflow: hidden;
+  }
+  .fchip .fchip-x {
+    width: 22px; height: 22px; margin-left: 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: none; background: transparent;
+    color: #8E8E93; border-radius: 50%;
+  }
+  .fchip .fchip-x:hover { background: #F2F3F4; color: #1F2125; }
+  .fchip .fchip-x svg { width: 9px; height: 9px; stroke-width: 2.4; }
+  .fchip .fchip-k { color: #4A4C50; font-weight: 500; }
+  .fchip .fchip-sep { color: #C8CACC; }
+  .fchip .fchip-v {
+    color: #1A8A56; font-weight: 500;
+    padding: 0 8px 0 0;
+  }
+  .fr-spacer { flex: 1; }
+  .link-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 26px; padding: 0 8px;
+    border: none; background: transparent;
+    font-size: 12px; font-weight: 500; color: #2EB273;
+    border-radius: 4px;
+  }
+  .link-btn:hover { background: #EBF9F2; }
+  .link-btn.muted { color: #656669; }
+  .link-btn.muted:hover { background: #F2F3F4; color: #1F2125; }
+  .link-btn svg { width: 12px; height: 12px; stroke-width: 1.8; }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+  }
+  thead th {
+    height: 38px;
+    background: #FAFBFB;
+    border-bottom: 1px solid #ECEDEF;
+    text-align: left;
+    padding: 0 14px;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #4A4C50;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    user-select: none;
+  }
+  thead th .th-inner {
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .sort {
+    display: inline-flex; flex-direction: column; gap: 1px;
+    color: #C8CACC; line-height: 0;
+  }
+  .sort svg { width: 7px; height: 4px; stroke-width: 2.2; }
+  .sort .active { color: #2EB273; }
+
+  th.col-reorder, td.col-reorder { width: 36px; padding: 0; text-align: center; color: #B0B2B4; }
+  .reorder-btn {
+    width: 22px; height: 22px;
+    border-radius: 4px; border: none;
+    background: transparent; color: #B0B2B4;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .reorder-btn:hover { background: #F2F3F4; color: #4A4C50; }
+  .reorder-btn svg { width: 12px; height: 12px; stroke-width: 1.8; }
+  th.col-check, td.col-check { width: 40px; padding: 0 0 0 6px; }
+  th.col-kebab, td.col-kebab { width: 40px; padding: 0; text-align: center; }
+  .row-kebab {
+    width: 26px; height: 26px;
+    border-radius: 5px; border: none;
+    background: transparent; color: #8E8E93;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .row-kebab:hover { background: #F2F3F4; color: #1F2125; }
+  .row-kebab.open { background: #E8F6EE; color: #1A8A56; }
+  .row-kebab svg { width: 14px; height: 14px; stroke-width: 1.8; }
+
+  /* Row-actions popover */
+  td.col-reorder { position: relative; overflow: visible; }
+  .row-menu {
+    position: absolute;
+    top: 36px; left: 28px;
+    z-index: 30;
+    width: 188px;
+    background: #fff;
+    border: 1px solid #ECEDEF;
+    border-radius: 8px;
+    box-shadow: 0 12px 32px -8px rgba(15,17,21,0.18), 0 2px 6px rgba(15,17,21,0.06);
+    padding: 5px;
+    font-size: 12.5px;
+  }
+  .row-menu::before {
+    content: '';
+    position: absolute;
+    top: -5px; left: 12px;
+    width: 9px; height: 9px;
+    background: #fff;
+    border-left: 1px solid #ECEDEF;
+    border-top: 1px solid #ECEDEF;
+    transform: rotate(45deg);
+  }
+  .rm-item {
+    width: 100%;
+    display: flex; align-items: center; gap: 10px;
+    height: 30px; padding: 0 10px;
+    border: none; border-radius: 5px; background: transparent;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: #1F2125;
+    text-align: left;
+  }
+  .rm-item:hover { background: #F5F6F7; }
+  .rm-item svg { width: 14px; height: 14px; color: #656669; stroke-width: 1.8; flex-shrink: 0; }
+  .rm-divider { height: 1px; background: #F2F3F4; margin: 4px 4px; }
+  .rm-item.danger { color: #B7333E; }
+  .rm-item.danger svg { color: #B7333E; }
+  .rm-item.danger:hover { background: #FBE3E5; }
+  thead th .th-inner {
+    width: 100%;
+    display: inline-flex; align-items: center; justify-content: space-between; gap: 6px;
+    cursor: pointer;
+  }
+
+  .cb {
+    width: 14px; height: 14px;
+    border: 1.5px solid #C8CACC;
+    border-radius: 3px;
+    display: inline-block;
+    background: #fff;
+    vertical-align: middle;
+  }
+  .cb.checked {
+    background: #2EB273; border-color: #2EB273; position: relative;
+  }
+  .cb.checked::after {
+    content: ''; position: absolute;
+    left: 3px; top: 1px;
+    width: 4px; height: 7px;
+    border: solid #fff; border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg);
+  }
+
+  tbody td {
+    height: 52px;
+    padding: 0 14px;
+    border-bottom: 1px solid #F2F3F4;
+    color: #1F2125;
+    white-space: nowrap;
+  }
+  tbody tr:hover td { background: #FAFBFB; }
+  tbody tr:last-child td { border-bottom: none; }
+  .id-link {
+    color: #2EB273;
+    text-decoration: none;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .id-link:hover { text-decoration: underline; }
+  .muted { color: #656669; }
+
+  .person {
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+    flex-shrink: 0;
+  }
+  .person-meta { display: flex; flex-direction: column; gap: 2px; line-height: 1; }
+  .person-name { font-weight: 500; color: #1F2125; }
+  .person-sub { font-size: 11.5px; color: #8E8E93; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 22px; padding: 0 9px;
+    border-radius: 4px;
+    font-size: 11px; font-weight: 500;
+  }
+  .pill::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    background: currentColor;
+  }
+  .pill.active { background: #DFF4E9; color: #1A8A56; }
+  .pill.inactive { background: #F2F3F4; color: #656669; }
+  .pill.pending { background: #FEF1DD; color: #B26B0F; }
+  .pill.approved { background: #DFF4E9; color: #1A8A56; }
+  .pill.in-review { background: #E6EEF9; color: #2A6FDB; }
+
+  .row-actions {
+    display: inline-flex; gap: 2px;
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
+  tbody tr:hover .row-actions { opacity: 1; }
+  .row-btn {
+    width: 26px; height: 26px;
+    border-radius: 5px; border: none;
+    background: transparent; color: #656669;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .row-btn:hover { background: #F2F3F4; color: #1F2125; }
+  .row-btn:hover.danger { color: #B7333E; background: #FBE3E5; }
+  .row-btn svg { width: 13px; height: 13px; stroke-width: 1.8; }
+
+  /* Footer */
+  .footer {
+    display: flex; align-items: center;
+    padding: 10px 14px;
+    gap: 10px;
+    font-size: 12px;
+    color: #4A4C50;
+    border-top: 1px solid #ECEDEF;
+    background: #FAFBFB;
+    flex-wrap: wrap;
+  }
+  .ft-icon {
+    width: 28px; height: 28px;
+    border-radius: 5px; border: none; background: transparent;
+    color: #4A4C50;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .ft-icon:hover { background: #F2F3F4; color: #1F2125; }
+  .ft-icon svg { width: 14px; height: 14px; stroke-width: 1.8; }
+  .ft-select {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 28px; padding: 0 10px;
+    border: 1px solid #E0E2E4; border-radius: 5px;
+    background: #fff;
+    font-size: 12px; font-weight: 500; color: #1F2125;
+  }
+  .ft-select:hover { background: #FAFBFB; }
+  .ft-select svg { width: 10px; height: 10px; color: #8E8E93; stroke-width: 2; }
+  .ft-select.filter-active { color: #1A8A56; background: #EBF9F2; border-color: #C8E8D6; }
+  .ft-select.filter-active svg { color: #1A8A56; }
+  .ft-divider { width: 1px; height: 16px; background: #ECEDEF; }
+  .ft-add {
+    width: 28px; height: 28px;
+    border: 1px dashed #C8CACC; border-radius: 5px;
+    background: transparent; color: #656669;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .ft-add:hover { color: #2EB273; border-color: #2EB273; }
+  .ft-add svg { width: 11px; height: 11px; stroke-width: 2.2; }
+  .save-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 28px; padding: 0 12px;
+    border-radius: 5px; border: none;
+    background: #2EB273; color: #fff;
+    font-size: 12px; font-weight: 600;
+  }
+  .save-btn svg { width: 11px; height: 11px; stroke-width: 2; }
+  .pl { color: #656669; }
+  .pl b { color: #1F2125; font-weight: 600; }
+  .ipp-row { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
+  .ipp { color: #1F2125; font-weight: 500; }
+  .per-page {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 24px; padding: 0 4px 0 8px;
+    border: 1px solid #E0E2E4; border-radius: 4px;
+    background: #fff; font-size: 12px; font-weight: 500; color: #1F2125;
+    cursor: pointer;
+  }
+  .per-page svg { width: 9px; height: 9px; color: #8E8E93; stroke-width: 2; }
+  .goto-input {
+    width: 56px; height: 24px;
+    padding: 0 8px;
+    border: 1px solid #E0E2E4; border-radius: 4px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 12px; color: #1F2125;
+    outline: none;
+  }
+  .goto-input:focus { border-color: #2EB273; }
+  .arrow-btn {
+    width: 24px; height: 24px; border-radius: 4px;
+    border: 1px solid #E0E2E4; background: #fff;
+    color: #4A4C50;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .arrow-btn:hover { background: #F2F3F4; color: #1F2125; }
+  .arrow-btn:disabled { color: #C8CACC; cursor: not-allowed; }
+  .arrow-btn svg { width: 11px; height: 11px; stroke-width: 2; }
+  .page-of { color: #1F2125; font-weight: 500; }
+</style>
+<template id="__bundler_thumbnail" data-bg-color="#F4F5F6">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#F4F5F6"/>
+    <rect x="80" y="120" width="1040" height="600" rx="16" fill="#fff" stroke="#ECEDEF" stroke-width="2"/>
+    <rect x="80" y="120" width="220" height="600" rx="16" fill="#FBFBFB"/>
+    <circle cx="600" cy="380" r="90" fill="#2EB273"/>
+    <path d="M555 395a35 35 0 1 1 70 0v45h-70zM590 360a18 18 0 1 1 0-36 18 18 0 0 1 0 36z" fill="#fff"/>
+    <text x="600" y="540" text-anchor="middle" font-family="Inter, sans-serif" font-size="40" font-weight="700" fill="#2EB273">ERP</text>
+    <text x="600" y="540" text-anchor="middle" font-family="Inter, sans-serif" font-size="40" font-weight="700" fill="#001866" dx="55">Force</text>
+    <text x="600" y="585" text-anchor="middle" font-family="Inter, sans-serif" font-size="18" font-weight="500" fill="#8E8E93">HRMS · Employee Management</text>
+  </svg>
+</template>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ───── SIDEBAR ───── -->
+  <aside class="sb">
+    <div class="sb-brand">
+      <div class="brand-stack">
+        <div class="brand">
+          <span class="brand-erp">ERP</span><span class="brand-force">Force</span><span class="brand-tm">™</span>
+        </div>
+        <div class="brand-tag">UNIFYING OPERATIONS, TRANSFORMING ENTERPRISES</div>
+      </div>
+    </div>
+
+    <button class="sb-collapse" aria-label="Collapse sidebar">
+      <svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+
+    <div class="sb-search">
+      <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input placeholder="Search menu…" />
+    </div>
+
+    <nav class="sb-nav">
+      <button class="nav-item">
+        <span class="ic"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span>
+        <span class="lbl">Dashboard</span>
+      </button>
+      <button class="nav-item">
+        <span class="ic"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><rect x="4" y="3" width="13" height="18" rx="2"/><path d="M8 3v2a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1V3"/><path d="M17 7h2a1 1 0 0 1 1 1v12a2 2 0 0 1-2 2H8"/></svg></span>
+        <span class="lbl">Organization Structure</span>
+        <svg class="chev" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <button class="nav-item">
+        <span class="ic"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path d="M9 2h6l1 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2l1-4z"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></svg></span>
+        <span class="lbl">Company Master Policy</span>
+        <svg class="chev" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <button class="nav-item">
+        <span class="ic"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></span>
+        <span class="lbl">Time Tracking</span>
+        <svg class="chev" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+
+      <button class="nav-item parent-active">
+        <span class="ic"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2.2"/><line x1="14" y1="9" x2="18" y2="9"/><line x1="14" y1="13" x2="18" y2="13"/><path d="M6 17.5c.6-1.6 1.8-2.5 3-2.5s2.4.9 3 2.5"/></svg></span>
+        <span class="lbl">Employee Management</span>
+        <svg class="chev open" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="nav-children">
+        <button class="nav-child active">
+          <span class="ch-lbl">Employee Master</span>
+        </button>
+        <button class="nav-child">
+          <span class="ch-lbl">Employee Contracts</span>
+        </button>
+        <button class="nav-child">
+          <span class="ch-lbl">Transfers &amp; Promotions</span>
+        </button>
+      </div>
+
+      <button class="nav-item">
+        <span class="ic"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path d="M4 19.5V4a2 2 0 0 1 2-2h13v17H6a2 2 0 0 0-2 2.5z"/><path d="M6 19h13"/></svg></span>
+        <span class="lbl">Asset Management</span>
+        <svg class="chev" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <button class="nav-item">
+        <span class="ic"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><polyline points="9.5 12 11.5 14 15 10.5"/></svg></span>
+        <span class="lbl">Approval Dashboard</span>
+      </button>
+      <button class="nav-item">
+        <span class="ic"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="9" r="4"/><path d="M3 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 4.5 2"/><circle cx="18.5" cy="18.5" r="3.5"/><line x1="18.5" y1="17" x2="18.5" y2="20"/><line x1="17" y1="18.5" x2="20" y2="18.5"/></svg></span>
+        <span class="lbl">Recruitment</span>
+        <svg class="chev" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <button class="nav-item">
+        <span class="ic"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="14" height="11" rx="2"/><path d="M17 9h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2"/><circle cx="9" cy="10" r="1"/><circle cx="13" cy="10" r="1"/><path d="M8 13c.7.6 1.7 1 3 1s2.3-.4 3-1"/></svg></span>
+        <span class="lbl">Onboarding</span>
+        <svg class="chev" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <button class="nav-item">
+        <span class="ic"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+        <span class="lbl">Approval Work Flow</span>
+      </button>
+      <button class="nav-item">
+        <span class="ic"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+        <span class="lbl">Leaves</span>
+        <svg class="chev" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <button class="nav-item">
+        <span class="ic"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg></span>
+        <span class="lbl">Resource Management</span>
+        <svg class="chev" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </nav>
+
+    <div class="sb-foot">
+      <span>Crafted with</span>
+      <span class="heart">♥</span>
+      <span><b class="erp">ERP</b><b class="force">Force</b><sup>™</sup></span>
+    </div>
+  </aside>
+
+  <!-- ───── MAIN ───── -->
+  <main class="main">
+
+    <div class="app-bar">
+      <!-- ─── App / Module Switcher ─── -->
+      <button class="app-switch" id="appSwitchBtn" aria-label="Switch module" aria-haspopup="true" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="5" r="1.6"/><circle cx="12" cy="5" r="1.6"/><circle cx="19" cy="5" r="1.6"/><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/><circle cx="5" cy="19" r="1.6"/><circle cx="12" cy="19" r="1.6"/><circle cx="19" cy="19" r="1.6"/></svg>
+      </button>
+
+      <!-- Crumb path with module chip as root -->
+      <nav class="crumb-path">
+        <button class="mod-chip" id="modPillBtn" aria-label="Current module: HRMS">
+          <span class="mp-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+          <span class="mp-name">HRMS</span>
+        </button>
+        <svg class="cp-sep" viewBox="0 0 24 24" stroke="currentColor" fill="none"><polyline points="9 18 15 12 9 6"/></svg>
+        <button class="cp-link">Employee Management</button>
+        <svg class="cp-sep" viewBox="0 0 24 24" stroke="currentColor" fill="none"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="cp-current">Employee Master</span>
+      </nav>
+
+      <!-- ─── App Switcher Popover ─── -->
+      <div class="as-pop" id="appSwitchPop">
+        <div class="as-head">
+          <input placeholder="Search modules, apps, recent…" />
+          <span class="as-pin">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:11px;height:11px;"><path d="M12 2v10"/><path d="M5 12l7 7 7-7"/></svg>
+            Pin to start
+          </span>
+        </div>
+        <div class="as-body">
+
+          <div class="as-section">
+            <div class="as-section-label">Pinned <span class="badge">3</span></div>
+            <div class="as-grid">
+              <button class="as-tile active pinned" style="--tile-bg:#EBF9F2;--tile-fg:#1A8A56;">
+                <span class="as-tile-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+                <div>
+                  <div class="as-tile-name">HRMS</div>
+                  <div class="as-tile-meta">248 people</div>
+                </div>
+                <span class="pin"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l1.5 4.5L18 8l-3.6 2.6L16 16l-4-2.8L8 16l1.6-5.4L6 8l4.5-1.5z"/></svg></span>
+              </button>
+              <button class="as-tile pinned" style="--tile-bg:#FFF3E6;--tile-fg:#B8651A;">
+                <span class="as-tile-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>
+                <div>
+                  <div class="as-tile-name">Inventory</div>
+                  <div class="as-tile-meta">12.4k SKUs</div>
+                </div>
+                <span class="pin"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l1.5 4.5L18 8l-3.6 2.6L16 16l-4-2.8L8 16l1.6-5.4L6 8l4.5-1.5z"/></svg></span>
+              </button>
+              <button class="as-tile pinned" style="--tile-bg:#E8EAF6;--tile-fg:#3949AB;">
+                <span class="as-tile-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+                <div>
+                  <div class="as-tile-name">Finance</div>
+                  <div class="as-tile-meta">GL · AP · AR</div>
+                </div>
+                <span class="pin"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l1.5 4.5L18 8l-3.6 2.6L16 16l-4-2.8L8 16l1.6-5.4L6 8l4.5-1.5z"/></svg></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="as-section">
+            <div class="as-section-label">All Modules <span class="badge">14</span></div>
+            <div class="as-grid">
+              <button class="as-tile" style="--tile-bg:#FCEBEC;--tile-fg:#C62828;">
+                <span class="as-tile-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg></span>
+                <div class="as-tile-row"><div class="as-tile-name">Sales</div></div>
+                <div class="as-tile-meta">Quotes · Orders · Invoices</div>
+              </button>
+              <button class="as-tile" style="--tile-bg:#FFEBE6;--tile-fg:#C2410C;">
+                <span class="as-tile-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg></span>
+                <div class="as-tile-row"><div class="as-tile-name">Procurement</div></div>
+                <div class="as-tile-meta">Vendors · POs · RFQs</div>
+              </button>
+              <button class="as-tile" style="--tile-bg:#F3E8FF;--tile-fg:#7E22CE;">
+                <span class="as-tile-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+                <div class="as-tile-row"><div class="as-tile-name">CRM</div><span class="new-pill">NEW</span></div>
+                <div class="as-tile-meta">Leads · Deals · Contacts</div>
+              </button>
+              <button class="as-tile" style="--tile-bg:#DCFCE7;--tile-fg:#15803D;">
+                <span class="as-tile-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+                <div class="as-tile-row"><div class="as-tile-name">Projects</div></div>
+                <div class="as-tile-meta">Tasks · Time · Billing</div>
+              </button>
+
+              <button class="as-tile" style="--tile-bg:#E0F2FE;--tile-fg:#0369A1;">
+                <span class="as-tile-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+                <div class="as-tile-row"><div class="as-tile-name">Documents</div></div>
+                <div class="as-tile-meta">Files · DMS · Signing</div>
+              </button>
+              <button class="as-tile" style="--tile-bg:#FEF3C7;--tile-fg:#92400E;">
+                <span class="as-tile-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>
+                <div class="as-tile-row"><div class="as-tile-name">Assets</div></div>
+                <div class="as-tile-meta">Fixed Assets · Depreciation</div>
+              </button>
+              <button class="as-tile" style="--tile-bg:#FCE7F3;--tile-fg:#9D174D;">
+                <span class="as-tile-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></span>
+                <div class="as-tile-row"><div class="as-tile-name">Reports</div></div>
+                <div class="as-tile-meta">Dashboards · Analytics</div>
+              </button>
+              <button class="as-tile" style="--tile-bg:#FFE4E6;--tile-fg:#9F1239;">
+                <span class="as-tile-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6"/><path d="M19 8v6"/></svg></span>
+                <div class="as-tile-row"><div class="as-tile-name">Payroll</div></div>
+                <div class="as-tile-meta">Runs · Slips · Statutory</div>
+              </button>
+
+              <button class="as-tile" style="--tile-bg:#F0FDF4;--tile-fg:#166534;">
+                <span class="as-tile-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6"/><path d="M12 22v-6"/><circle cx="12" cy="12" r="4"/><path d="M4.93 4.93l4.24 4.24"/><path d="M14.83 14.83l4.24 4.24"/></svg></span>
+                <div class="as-tile-row"><div class="as-tile-name">Manufacturing</div></div>
+                <div class="as-tile-meta">BOM · Work Orders</div>
+              </button>
+              <button class="as-tile" style="--tile-bg:#F1F5F9;--tile-fg:#334155;">
+                <span class="as-tile-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
+                <div class="as-tile-row"><div class="as-tile-name">Warehouse</div></div>
+                <div class="as-tile-meta">Bins · Picking · Receiving</div>
+              </button>
+              <button class="as-tile locked" style="--tile-bg:#F2F3F4;--tile-fg:#6B7280;">
+                <span class="as-tile-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                <div class="as-tile-row"><div class="as-tile-name">Quality</div></div>
+                <div class="as-tile-meta">Upgrade required</div>
+                <span class="lock-ic"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+              </button>
+              <button class="as-tile" style="--tile-bg:#EEF2FF;--tile-fg:#4338CA;">
+                <span class="as-tile-icon"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09A1.65 1.65 0 0 0 9 3.09V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+                <div class="as-tile-row"><div class="as-tile-name">Admin</div></div>
+                <div class="as-tile-meta">Users · Roles · Settings</div>
+              </button>
+            </div>
+          </div>
+
+        </div>
+        <div class="as-foot">
+          <span>⌘ + 1–9 to switch modules instantly</span>
+          <span class="right"><a>Customize workspace →</a></span>
+        </div>
+      </div>
+
+      <div class="gs" id="globalSearch">
+        <div class="gs-input">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Search employees, vendors, orders, anything…" />
+          <span class="gs-kbd">⌘K</span>
+        </div>
+        <div class="gs-pop">
+          <div class="gs-group">
+            <div class="gs-group-label">Employees <span class="count">· 3 of 12</span></div>
+            <div class="gs-item focused">
+              <div class="gs-thumb av">SA</div>
+              <div class="gs-body">
+                <div class="gs-title"><mark>Sara</mark>h Al-Mansour</div>
+                <div class="gs-meta">EMP-001 · Sales · Senior Account Executive</div>
+              </div>
+              <span class="gs-trail">Active</span>
+            </div>
+            <div class="gs-item">
+              <div class="gs-thumb av" style="background:linear-gradient(135deg,#5A8DEE,#3653B9);">SK</div>
+              <div class="gs-body">
+                <div class="gs-title"><mark>Sara</mark> Khalid</div>
+                <div class="gs-meta">EMP-148 · HR · Recruiter</div>
+              </div>
+              <span class="gs-trail">Pending</span>
+            </div>
+            <div class="gs-item">
+              <div class="gs-thumb av" style="background:linear-gradient(135deg,#F4A24A,#C77B22);">SP</div>
+              <div class="gs-body">
+                <div class="gs-title"><mark>Sara</mark>h Patel</div>
+                <div class="gs-meta">EMP-203 · Finance · Accountant II</div>
+              </div>
+              <span class="gs-trail">Active</span>
+            </div>
+          </div>
+          <div class="gs-group">
+            <div class="gs-group-label">Documents <span class="count">· 2</span></div>
+            <div class="gs-item">
+              <div class="gs-thumb doc"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <div class="gs-body">
+                <div class="gs-title"><mark>Sara</mark>h Al-Mansour — Offer Letter</div>
+                <div class="gs-meta">PDF · uploaded 12 Mar 2025</div>
+              </div>
+              <span class="gs-trail">PDF</span>
+            </div>
+            <div class="gs-item">
+              <div class="gs-thumb doc"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <div class="gs-body">
+                <div class="gs-title">Performance Review — <mark>Sara</mark> Khalid · Q1</div>
+                <div class="gs-meta">DOCX · last edited 2 days ago</div>
+              </div>
+              <span class="gs-trail">Draft</span>
+            </div>
+          </div>
+          <div class="gs-group">
+            <div class="gs-group-label">Actions</div>
+            <div class="gs-item">
+              <div class="gs-thumb act"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+              <div class="gs-body">
+                <div class="gs-title">Add new employee</div>
+                <div class="gs-meta">Employee Master · Create</div>
+              </div>
+              <span class="gs-trail">⌘N</span>
+            </div>
+            <div class="gs-item">
+              <div class="gs-thumb act"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+              <div class="gs-body">
+                <div class="gs-title">Export current view to CSV</div>
+                <div class="gs-meta">Employee Master · 248 rows</div>
+              </div>
+              <span class="gs-trail">⌘⇧E</span>
+            </div>
+          </div>
+          <div class="gs-foot">
+            <span><span class="gs-kbd">↑↓</span> Navigate</span>
+            <span><span class="gs-kbd">↵</span> Open</span>
+            <span><span class="gs-kbd">esc</span> Close</span>
+            <span class="right">Show all 14 results →</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="icon-btn" aria-label="Notifications">
+        <span class="dot"></span>
+        <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <div class="v-divider"></div>
+      <button class="user">
+        <div class="user-avatar">NS</div>
+        <div class="user-meta">
+          <span class="user-name">Naidu Setti</span>
+          <span class="user-role">Admin</span>
+        </div>
+      </button>
+    </div>
+
+    <div class="page">
+      <div class="card">
+
+        <div class="page-toolbar" style="padding:14px 16px;margin:0;border-bottom:1px solid #F2F3F4;align-items:center;">
+          <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="font-size:18px;font-weight:600;color:#1F2125;letter-spacing:-0.025em;">Employee Master</div>
+              <span class="page-count">248 employees</span>
+            </div>
+            <div style="font-size:12px;color:#8E8E93;letter-spacing:-0.01em;">View, manage and onboard employees across companies.</div>
+          </div>
+          <button class="view-pill">
+            <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="4" rx="1"/><rect x="3" y="11" width="18" height="4" rx="1"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
+            Table View
+            <svg viewBox="0 0 12 8" stroke="currentColor" style="width:9px;height:6px;margin-left:2px;"><polyline points="1 1 6 6 11 1" fill="none"/></svg>
+          </button>
+          <button class="view-add">
+            <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            View
+          </button>
+          <button class="btn">
+            <svg viewBox="0 0 24 24" stroke="currentColor"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            Filter <span style="background:#EBF9F2;color:#1A8A56;font-weight:600;font-size:10.5px;padding:1px 5px;border-radius:8px;">2</span>
+          </button>
+          <button class="btn btn-primary">
+            <svg viewBox="0 0 24 24" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add
+          </button>
+          <button class="icon-only" aria-label="More">
+            <svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+          </button>
+        </div>
+
+        <div class="filter-row">
+          <span class="lbl">Filters:</span>
+          <span class="fchip">
+            <button class="fchip-x" aria-label="Remove"><svg viewBox="0 0 12 12" stroke="currentColor"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg></button>
+            <span class="fchip-k">Department</span>
+            <span class="fchip-sep">|</span>
+            <span class="fchip-v">In Sales, HR</span>
+          </span>
+          <span class="fchip">
+            <button class="fchip-x" aria-label="Remove"><svg viewBox="0 0 12 12" stroke="currentColor"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg></button>
+            <span class="fchip-k">Status</span>
+            <span class="fchip-sep">|</span>
+            <span class="fchip-v">In Active, Pending</span>
+          </span>
+          <span class="fr-spacer"></span>
+          <button class="link-btn">
+            <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Filter
+          </button>
+          <button class="link-btn muted">
+            <svg viewBox="0 0 24 24" stroke="currentColor"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
+            Clear Filter
+          </button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th class="col-reorder"><button class="reorder-btn" aria-label="Reorder columns"><svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="8 7 4 11 8 15"/><polyline points="16 7 20 11 16 15"/><line x1="4" y1="11" x2="20" y2="11"/></svg></button></th>
+              <th class="col-check"><span class="cb"></span></th>
+              <th><span class="th-inner">ID <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span></th>
+              <th><span class="th-inner">Employee <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg class="active" viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span></th>
+              <th><span class="th-inner">Department <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span></th>
+              <th><span class="th-inner">Designation <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span></th>
+              <th><span class="th-inner">Approval Status <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span></th>
+              <th><span class="th-inner">Status <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span></th>
+              <th><span class="th-inner">Joined on <span class="sort"><svg viewBox="0 0 8 4"><polyline points="1 3 4 1 7 3" stroke="currentColor" fill="none"/></svg><svg viewBox="0 0 8 4"><polyline points="1 1 4 3 7 1" stroke="currentColor" fill="none"/></svg></span></span></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+
+        <div class="footer">
+          <button class="ft-icon" aria-label="Columns">
+            <svg viewBox="0 0 24 24" stroke="currentColor"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          </button>
+          <button class="ft-select">Default <svg viewBox="0 0 12 8" stroke="currentColor"><polyline points="1 1 6 6 11 1"/></svg></button>
+          <button class="ft-select filter-active">Approved <svg viewBox="0 0 12 8" stroke="currentColor"><polyline points="1 1 6 6 11 1"/></svg></button>
+          <button class="ft-add" aria-label="Add view"><svg viewBox="0 0 12 12" stroke="currentColor"><line x1="6" y1="2" x2="6" y2="10"/><line x1="2" y1="6" x2="10" y2="6"/></svg></button>
+          <span class="ft-divider"></span>
+          <button class="save-btn">
+            Save
+            <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          </button>
+          <div class="ipp-row">
+            <span class="pl">Items per page :</span>
+            <span class="per-page">20 <svg viewBox="0 0 12 8" stroke="currentColor"><polyline points="1 1 6 6 11 1"/></svg></span>
+            <span class="pl" style="margin-left:8px;">Go To :</span>
+            <input class="goto-input" type="number" placeholder="" />
+            <button class="arrow-btn" aria-label="Previous" disabled><svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="15 18 9 12 15 6"/></svg></button>
+            <span class="page-of">Page <b>1</b> of 8</span>
+            <button class="arrow-btn" aria-label="Next"><svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="9 18 15 12 9 6"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const ROWS = [
+    ['EMP-2026-000108','Test Suraj','test.suraj@erpforce.ai','#E25563','TS','Development','District Operations Liaison','approved','active','02 May 2026'],
+    ['EMP-2026-000107','Parth Cee','parth.c@force1.io','#2A6FDB','PC','Sales staff','Admin','approved','active','28 Apr 2026'],
+    ['EMP-2026-000106','Parth SaleEmp','parth.se@force1.io','#1A8A56','PS','Sales','Force 1 Sale Employee','pending','pending','25 Apr 2026'],
+    ['EMP-2026-000105','Parth Saleemplyee','parth.s@force1.io','#B26B0F','PS','Sales','Force 1 Sale Employee','in-review','pending','22 Apr 2026'],
+    ['EMP-2026-000104','Parth SalesTL','parth.tl@force1.io','#7B5BD8','PT','Sales','Force Sales TL','approved','active','21 Apr 2026'],
+    ['EMP-2026-000103','Parth HR','parth.hr@force1.io','#E25563','PH','HR','Force HR Manager','approved','active','17 Apr 2026'],
+    ['EMP-2026-000102','Parth Sales','parth.sm@force1.io','#656669','PS','Sales','Force Sale Manager','approved','inactive','10 Apr 2026'],
+    ['EMP-2026-000101','Parth CTO','parth.cto@force1.io','#2EB273','PC','Admin','Force CTO','approved','active','08 Apr 2026'],
+    ['EMP-2026-000100','Parth Director','parth.dir@force1.io','#001866','PD','Admin','Force Director','approved','active','05 Apr 2026'],
+    ['EMP-2026-000099','Ram 1','ram1@erp-force.com','#7B5BD8','R1','Sales','CEO','approved','active','01 Apr 2026'],
+  ];
+  const STATUS_LABEL = { active: 'Active', inactive: 'Inactive', pending: 'Pending', approved: 'Approved', 'in-review': 'In Review' };
+  const ROW_MENU_HTML = `
+    <div class="row-menu" role="menu">
+      <button class="rm-item" role="menuitem">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        View
+      </button>
+      <button class="rm-item" role="menuitem">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Edit
+      </button>
+      <button class="rm-item" role="menuitem">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Duplicate
+      </button>
+      <button class="rm-item" role="menuitem">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        Export
+      </button>
+      <button class="rm-item" role="menuitem">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+        Archive
+      </button>
+      <div class="rm-divider"></div>
+      <button class="rm-item danger" role="menuitem">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        Delete
+      </button>
+    </div>
+  `;
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = ROWS.map((r, i) => `
+    <tr>
+      <td class="col-reorder"><button class="row-kebab${i === 0 ? ' open' : ''}" title="Row actions"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>${i === 0 ? ROW_MENU_HTML : ''}</td>
+      <td class="col-check"><span class="cb"></span></td>
+      <td><a class="id-link" href="#">${r[0]}</a></td>
+      <td>
+        <span class="person">
+          <span class="avatar" style="background:${r[3]}">${r[4]}</span>
+          <span class="person-meta">
+            <span class="person-name">${r[1]}</span>
+            <span class="person-sub">${r[2]}</span>
+          </span>
+        </span>
+      </td>
+      <td class="muted">${r[5]}</td>
+      <td>${r[6]}</td>
+      <td><span class="pill ${r[7]}">${STATUS_LABEL[r[7]]}</span></td>
+      <td><span class="pill ${r[8]}">${STATUS_LABEL[r[8]]}</span></td>
+      <td class="muted">${r[9]}</td>
+    </tr>
+  `).join('');
+
+  function closeAllRowMenus() {
+    document.querySelectorAll('.row-menu').forEach(m => m.remove());
+    document.querySelectorAll('.row-kebab.open').forEach(b => b.classList.remove('open'));
+  }
+  document.body.addEventListener('click', e => {
+    const cb = e.target.closest('.cb');
+    if (cb) cb.classList.toggle('checked');
+    const kb = e.target.closest('.row-kebab');
+    if (kb) {
+      const wasOpen = kb.classList.contains('open');
+      closeAllRowMenus();
+      if (!wasOpen) {
+        kb.classList.add('open');
+        kb.insertAdjacentHTML('afterend', ROW_MENU_HTML);
+      }
+      e.stopPropagation();
+      return;
+    }
+    if (!e.target.closest('.row-menu')) closeAllRowMenus();
+  });
+
+  // ── App switcher toggle ──
+  (function() {
+    const btn = document.getElementById('appSwitchBtn');
+    const pop = document.getElementById('appSwitchPop');
+    const pillBtn = document.getElementById('modPillBtn');
+    const gs = document.getElementById('globalSearch');
+    const gsInput = gs?.querySelector('input');
+    function close() { pop.classList.remove('open'); btn.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+    function open() { pop.classList.add('open'); btn.classList.add('open'); btn.setAttribute('aria-expanded','true'); gs?.classList.remove('open'); }
+    btn?.addEventListener('click', e => { e.stopPropagation(); pop.classList.contains('open') ? close() : open(); });
+    pillBtn?.addEventListener('click', e => { e.stopPropagation(); pop.classList.contains('open') ? close() : open(); });
+    // tile pick → swap module pill
+    pop?.querySelectorAll('.as-tile').forEach(tile => {
+      tile.addEventListener('click', e => {
+        e.stopPropagation();
+        if (tile.classList.contains('locked')) return;
+        pop.querySelectorAll('.as-tile').forEach(t => t.classList.remove('active'));
+        tile.classList.add('active');
+        const name = tile.querySelector('.as-tile-name')?.textContent || 'HRMS';
+        const icon = tile.querySelector('.as-tile-icon svg')?.outerHTML;
+        const pill = document.querySelector('#modPillBtn .mp-name');
+        const pillIcon = document.querySelector('#modPillBtn .mp-icon');
+        if (pill) pill.textContent = name;
+        if (pillIcon && icon) pillIcon.innerHTML = icon;
+        close();
+      });
+    });
+    // Global search toggle
+    gsInput?.addEventListener('focus', () => { gs.classList.add('open'); close(); });
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#appSwitchPop') && !e.target.closest('#appSwitchBtn') && !e.target.closest('#modPillBtn')) close();
+      if (!e.target.closest('#globalSearch')) gs?.classList.remove('open');
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { close(); gs?.classList.remove('open'); } });
+  })();
+</script>
+
+</body>
+</html>

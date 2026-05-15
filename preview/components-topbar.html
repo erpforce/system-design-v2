@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #F4F5F6;
+    color: #1F2125;
+    letter-spacing: -0.02em;
+    padding: 16px;
+  }
+  svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+  .lbl {
+    font-size: 9.5px;
+    font-weight: 500;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: #9EA0A3;
+    padding: 0 4px 8px;
+  }
+  .stack { display: flex; flex-direction: column; gap: 18px; }
+  .frame {
+    background: #fff;
+    border: 1px solid #ECEDEF;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  /* ─── App bar ─── */
+  .app-bar {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    gap: 14px;
+  }
+  .app-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+  .right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+  .module {
+    display: flex; align-items: center; gap: 8px;
+    padding-right: 14px;
+    border-right: 1px solid #ECEDEF;
+    height: 32px;
+  }
+  .module-mark {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    background: #EBF9F2;
+    color: #2EB273;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .module-mark svg { width: 14px; height: 14px; stroke-width: 1.8; }
+  .module-text { font-size: 13.5px; font-weight: 600; color: #1F2125; letter-spacing: -0.025em; }
+
+  .search {
+    height: 34px;
+    flex: 1;
+    max-width: 360px;
+    background: #F5F6F7;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 12px;
+  }
+  .search:focus-within { background: #fff; border-color: #2EB273; }
+  .search svg { color: #9EA0A3; width: 14px; height: 14px; flex-shrink: 0; }
+  .search input {
+    border: none; outline: none; background: transparent;
+    font-family: inherit; font-size: 13px;
+    color: #1F2125; flex: 1; min-width: 0;
+  }
+  .search input::placeholder { color: #9EA0A3; }
+  .kbd {
+    font-size: 10px; font-weight: 500; color: #9EA0A3;
+    background: #fff; border: 1px solid #E0E2E4;
+    border-radius: 3px; padding: 1px 5px; line-height: 1.2;
+  }
+
+  .icon-btn {
+    width: 34px; height: 34px;
+    border-radius: 6px; border: none; background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #4A4C50; position: relative;
+  }
+  .icon-btn:hover { background: #F2F3F4; color: #1F2125; }
+  .icon-btn svg { width: 17px; height: 17px; }
+  .dot {
+    position: absolute; top: 8px; right: 8px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #E25563; border: 1.5px solid #fff;
+  }
+  .v-divider { width: 1px; height: 22px; background: #ECEDEF; flex-shrink: 0; }
+
+  .user {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 8px 4px 4px; border-radius: 6px;
+    border: none; background: transparent; cursor: pointer; font-family: inherit;
+  }
+  .user:hover { background: #F2F3F4; }
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #2EB273 0%, #1A8A56 100%);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+  }
+  .user-meta { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
+  .user-name { font-size: 12.5px; font-weight: 500; color: #1F2125; line-height: 1; }
+  .user-role { font-size: 10.5px; color: #9EA0A3; line-height: 1; }
+  .user .chev svg { width: 12px; height: 12px; color: #B0B2B4; }
+
+  /* ─── Page bar — TWO ROWS for clarity ─── */
+  .page-bar { display: flex; flex-direction: column; }
+  .page-bar-row1 {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 16px;
+  }
+  .title-block { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+  .crumbs {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11.5px; color: #8E8E93;
+    letter-spacing: -0.005em; line-height: 1;
+  }
+  .crumbs .sep { color: #D0D3D6; }
+  .crumbs .here { color: #4A4C50; font-weight: 500; }
+  .title {
+    font-size: 17px; font-weight: 600;
+    color: #1F2125; letter-spacing: -0.03em; line-height: 1.1;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .title-row-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .btn {
+    height: 34px; padding: 0 14px;
+    border-radius: 6px; border: 1px solid #E0E2E4;
+    background: #fff; cursor: pointer; font-family: inherit;
+    font-size: 13px; font-weight: 500; color: #1F2125;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { background: #FAFBFB; }
+  .btn svg { width: 14px; height: 14px; color: #4A4C50; }
+  .btn-primary { background: #2EB273; border-color: #2EB273; color: #fff; }
+  .btn-primary:hover { background: #29A068; border-color: #29A068; }
+  .btn-primary svg { color: #fff; }
+  .btn-ghost { border-color: transparent; color: #4A4C50; }
+  .btn-ghost:hover { background: #F2F3F4; }
+
+  .page-bar-row2 {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 12px;
+    border-top: 1px solid #F2F3F4;
+    background: #FAFBFB;
+  }
+  .tabs {
+    display: flex; align-items: center;
+    background: #fff;
+    border: 1px solid #E0E2E4;
+    border-radius: 6px;
+    padding: 2px;
+    gap: 2px;
+  }
+  .tab {
+    height: 26px; padding: 0 12px;
+    border-radius: 4px; border: none;
+    background: transparent; cursor: pointer; font-family: inherit;
+    font-size: 12.5px; font-weight: 500; color: #656669;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tab:hover { color: #1F2125; }
+  .tab.active { background: #EBF9F2; color: #2EB273; }
+  .tab svg { width: 12px; height: 12px; }
+  .row2-spacer { flex: 1; }
+  .meta-pill {
+    font-size: 12px; color: #656669;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .meta-pill b { color: #1F2125; font-weight: 600; }
+
+  /* ─── Form bar — generous spacing ─── */
+  .form-bar {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    gap: 16px;
+  }
+  .back-btn {
+    width: 36px; height: 36px; border-radius: 8px;
+    border: 1px solid #E0E2E4; background: #fff;
+    cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #4A4C50;
+  }
+  .back-btn:hover { background: #F2F3F4; color: #1F2125; }
+  .back-btn svg { width: 15px; height: 15px; }
+
+  .form-title-block {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .status-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 20px; padding: 0 8px;
+    border-radius: 4px;
+    font-size: 11px; font-weight: 500;
+    background: #FEF1DD; color: #B26B0F;
+    flex-shrink: 0;
+  }
+  .status-tag .tdot { width: 5px; height: 5px; border-radius: 50%; background: #B26B0F; }
+  .form-title-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .form-title {
+    font-size: 16px; font-weight: 600;
+    color: #1F2125; letter-spacing: -0.025em; line-height: 1.1;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    min-width: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="stack">
+
+  <!-- ── 1. App bar ── -->
+  <div>
+    <div class="lbl">App bar — global search + alerts + identity</div>
+    <div class="frame">
+      <div class="app-bar">
+        <div class="app-left">
+          <div class="module">
+            <div class="module-mark">
+              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <span class="module-text">HRMS</span>
+          </div>
+          <div class="search">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input placeholder="Search employees, documents, requests…" />
+            <span class="kbd">⌘K</span>
+          </div>
+        </div>
+        <div class="right">
+          <button class="icon-btn" aria-label="Help">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </button>
+          <button class="icon-btn" aria-label="Notifications">
+            <span class="dot"></span>
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </button>
+          <div class="v-divider"></div>
+          <button class="user">
+            <div class="avatar">AS</div>
+            <div class="user-meta">
+              <span class="user-name">Amrit Sunari</span>
+              <span class="user-role">Administrator</span>
+            </div>
+            <span class="chev"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 2. Page bar — split rows ── -->
+  <div>
+    <div class="lbl">Page bar — title row + view-switch row, no overlap</div>
+    <div class="frame">
+      <div class="page-bar">
+        <div class="page-bar-row1">
+          <div class="title-block">
+            <div class="crumbs">
+              <span>Organization Structure</span>
+              <span class="sep">/</span>
+              <span class="here">Company Policy</span>
+            </div>
+            <span class="title">Document Master</span>
+          </div>
+          <div class="title-row-actions">
+            <button class="btn btn-ghost">
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export
+            </button>
+            <button class="btn btn-primary">
+              <svg viewBox="0 0 24 24" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New document
+            </button>
+          </div>
+        </div>
+        <div class="page-bar-row2">
+          <div class="tabs">
+            <button class="tab active">
+              <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              Table
+            </button>
+            <button class="tab">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+              Grid
+            </button>
+            <button class="tab">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Calendar
+            </button>
+          </div>
+          <div class="row2-spacer"></div>
+          <span class="meta-pill"><b>248</b> records</span>
+          <div class="v-divider"></div>
+          <button class="btn btn-ghost">
+            <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            Filter
+          </button>
+          <button class="btn btn-ghost">
+            <svg viewBox="0 0 24 24"><path d="M3 6h18M7 12h10M10 18h4"/></svg>
+            Sort
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. Form bar — single row, generous spacing ── -->
+  <div>
+    <div class="lbl">Form bar — record title + status tag + save controls</div>
+    <div class="frame">
+      <div class="form-bar">
+        <button class="back-btn" aria-label="Back">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="form-title-block">
+          <div class="crumbs">
+            <span>Document Master</span>
+            <span class="sep">/</span>
+            <span class="here">DOC-00214</span>
+          </div>
+          <div class="form-title-row">
+            <span class="form-title">Emirates ID — Renewal Form</span>
+            <span class="status-tag"><span class="tdot"></span>Draft</span>
+          </div>
+        </div>
+        <div class="title-row-actions">
+          <button class="btn btn-ghost">Discard</button>
+          <button class="btn">Save draft</button>
+          <button class="btn btn-primary">
+            <svg viewBox="0 0 24 24" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+            Publish
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

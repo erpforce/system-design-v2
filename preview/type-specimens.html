@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #fff;
+    color: #1F2125;
+    padding: 24px 28px;
+    letter-spacing: -0.02em;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .card {
+    border: 1px solid #F0F1F0;
+    border-radius: 6px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: #fff;
+  }
+  .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #F5F6F5;
+  }
+  .name { font-size: 13px; font-weight: 600; color: #1F2125; letter-spacing: -0.02em; }
+  .role { font-size: 11px; font-weight: 500; color: #8E8E93; letter-spacing: 0.04em; text-transform: uppercase; }
+  .glyph-row { display: flex; align-items: baseline; gap: 14px; }
+  .aa-inter { font-family: 'Inter', sans-serif; font-size: 44px; font-weight: 600; color: #1F2125; line-height: 1; letter-spacing: -0.04em; }
+  .aa-mono  { font-family: 'JetBrains Mono', monospace; font-size: 40px; font-weight: 500; color: #1F2125; line-height: 1; letter-spacing: -0.02em; }
+  .weights { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .weight-line { font-size: 13px; line-height: 1.3; color: #1F2125; letter-spacing: -0.02em; display: flex; align-items: baseline; gap: 8px; }
+  .weight-tag { font-size: 10px; color: #A7A8A9; font-family: 'JetBrains Mono', monospace; letter-spacing: 0; min-width: 28px; }
+  .sentence { font-family: 'Inter', sans-serif; font-size: 14px; color: #1F2125; letter-spacing: -0.02em; line-height: 1.5; }
+  .mono-sentence { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #1F2125; letter-spacing: 0; line-height: 1.5; }
+  .muted { color: #8E8E93; }
+</style></head><body>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="head">
+        <span class="name">Inter</span>
+        <span class="role">Primary · UI</span>
+      </div>
+      <div class="glyph-row">
+        <div class="aa-inter">Aa</div>
+        <div class="weights">
+          <div class="weight-line"><span class="weight-tag">400</span><span style="font-weight:400">Regular</span></div>
+          <div class="weight-line"><span class="weight-tag">500</span><span style="font-weight:500">Medium</span></div>
+          <div class="weight-line"><span class="weight-tag">600</span><span style="font-weight:600">SemiBold</span></div>
+          <div class="weight-line"><span class="weight-tag">700</span><span style="font-weight:700">Bold</span></div>
+        </div>
+      </div>
+      <div class="sentence">Human Resource Management <span class="muted">— labels, body, navigation.</span></div>
+    </div>
+
+    <div class="card">
+      <div class="head">
+        <span class="name">JetBrains Mono</span>
+        <span class="role">Data · IDs</span>
+      </div>
+      <div class="glyph-row">
+        <div class="aa-mono">A1</div>
+        <div class="weights">
+          <div class="weight-line"><span class="weight-tag">400</span><span style="font-family:'JetBrains Mono',monospace;font-weight:400">Regular</span></div>
+          <div class="weight-line"><span class="weight-tag">500</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500">Medium</span></div>
+          <div class="weight-line"><span class="weight-tag">700</span><span style="font-family:'JetBrains Mono',monospace;font-weight:700">Bold</span></div>
+        </div>
+      </div>
+      <div class="mono-sentence">DOC-00141 · EMP-00142 <span class="muted">— ids, codes, values.</span></div>
+    </div>
+
+  </div>
+
+</body></html>
