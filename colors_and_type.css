@@ -1,0 +1,238 @@
+/* ============================================================
+   ERPForce HRM — Design Tokens
+   Source: HRM-Review-File.fig (Figma)
+   ============================================================ */
+
+/* Google Fonts import — Inter & JetBrains Mono */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  /* ── Primary Scale (Green) ──────────────────────────────── */
+  --theme-primary-50:    #B6E9D6;
+  --theme-primary-100:   #E8F5F0;
+  --theme-primary-200:   #D1EBE1;
+  --theme-primary-300:   #BAE1D2;
+  --theme-primary-400:   #A3D7C3;
+  --theme-primary-500:   #8CCDB4;
+  --theme-primary-600:   #75C3A5;
+  --theme-primary-700:   #54CC96;
+  --theme-primary-800:   #2EB273;  /* ← Primary brand color */
+  --theme-primary-900:   #1A6B44;
+
+  /* ── Secondary Scale (Neutral) ──────────────────────────── */
+  --theme-secondary-50:   #F9F9F9;
+  --theme-secondary-100:  #F5F5F5;
+  --theme-secondary-200:  #E0E0E0;
+  --theme-secondary-300:  #D3D3D4;
+  --theme-secondary-400:  #C4C4C4;
+  --theme-secondary-500:  #9E9E9E;
+  --theme-secondary-600:  #757575;
+  --theme-secondary-700:  #616161;
+  --theme-secondary-800:  #424242;
+  --theme-secondary-900:  #212121;
+  --theme-secondary-1000: #000000;
+
+  /* ── Error Scale ────────────────────────────────────────── */
+  --theme-error-100: #FFEBEE;
+  --theme-error-200: #FFCDD2;
+  --theme-error-300: #EF9A9A;
+  --theme-error-400: #E57373;
+  --theme-error-500: #EF5350;
+  --theme-error-600: #E53935;
+  --theme-error-700: #C62828;
+  --theme-error-800: #B71C1C;
+  --theme-error-900: #880E4F;
+
+  /* ── Semantic aliases ───────────────────────────────────── */
+  --color-primary:        var(--theme-primary-800);
+  --color-primary-dark:   var(--theme-primary-900);
+  --color-primary-light:  var(--theme-primary-100);
+  --color-primary-mid:    var(--theme-primary-200);
+  --color-primary-shadow: rgba(20,78,50,0.10);
+
+  --color-navy:           #001866;
+  --color-olive:          #798638;
+
+  /* ── Neutrals (mapped to secondary scale) ───────────────── */
+  --color-white:          #FFFFFF;
+  --color-bg:             #FFFFFF;
+  --color-bg-sidebar:     var(--theme-secondary-50);
+  --color-bg-subtle:      var(--theme-secondary-100);
+  --color-bg-muted:       var(--theme-secondary-200);
+
+  /* ── Text (mapped to secondary scale) ──────────────────── */
+  --color-text-primary:   var(--theme-secondary-900);
+  --color-text-strong:    var(--theme-secondary-800);
+  --color-text-secondary: var(--theme-secondary-700);
+  --color-text-tertiary:  var(--theme-secondary-600);
+  --color-text-muted:     var(--theme-secondary-500);
+  --color-text-disabled:  var(--theme-secondary-400);
+  --color-text-placeholder: var(--theme-secondary-300);
+
+  /* ── Borders ────────────────────────────────────────────── */
+  --color-border:         var(--theme-secondary-100);
+  --color-border-mid:     var(--theme-secondary-200);
+  --color-border-strong:  var(--theme-secondary-300);
+  --color-border-input:   var(--theme-secondary-200);
+
+  /* ── Status / Semantic ──────────────────────────────────── */
+  --color-success:        var(--theme-primary-800);
+  --color-success-bg:     var(--theme-primary-100);
+  --color-success-bg-mid: var(--theme-primary-200);
+
+  --color-info:           #0099CC;
+  --color-info-bg:        #CDE3F4;
+
+  --color-warning:        #CC9900;
+  --color-warning-bg:     #FFF3CC;
+
+  --color-error:          var(--theme-error-600);
+  --color-error-bg:       var(--theme-error-100);
+
+  /* ── Shadows ────────────────────────────────────────────── */
+  --shadow-primary-btn:   0px 4px 10px -2px rgba(20,78,50,0.05),
+                          0px 2px 2px -1px rgba(20,78,50,0.10),
+                          0px -1px 4px 0px rgba(0,0,0,0.05);
+  --shadow-secondary-btn: 0px 0px 2px 0px #E0E0E0,
+                          0px 1px 4px -2px rgba(24,39,75,0.02),
+                          0px 4px 4px -2px rgba(24,39,75,0.06);
+  --shadow-input:         0px 1px 2px 0px rgba(0,0,0,0.05);
+  --shadow-card:          0px 1px 2px 0px rgba(0,0,0,0.05),
+                          0px 0px 2px 0px #E0E0E0;
+  --shadow-dropdown:      0px 4px 16px 0px rgba(0,0,0,0.12);
+
+  /* ── Border Radius ──────────────────────────────────────── */
+  --radius-sm:    2px;
+  --radius:       4px;   /* Standard — buttons, inputs, cards */
+  --radius-md:    8px;   /* Avatars, larger chips */
+  --radius-pill:  15px;  /* Badge/pill */
+  --radius-full:  9999px; /* Toggle, fully rounded */
+
+  /* ── Spacing ────────────────────────────────────────────── */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-14: 56px;  /* Top bar / sidebar header height */
+
+  /* ── Layout ─────────────────────────────────────────────── */
+  --layout-sidebar-width:   240px;
+  --layout-topbar-height:    56px;
+  --layout-subbar-height:    56px;
+  --layout-content-padding:  32px;
+
+  /* ── Typography — Fonts ─────────────────────────────────── */
+  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:  'JetBrains Mono', 'Fira Mono', monospace;
+
+  /* ── Typography — Sizes ─────────────────────────────────── */
+  --text-xs:   10px;
+  --text-sm:   12px;
+  --text-base: 14px;
+  --text-md:   16px;
+  --text-lg:   18px;
+  --text-xl:   20px;
+  --text-2xl:  24px;
+
+  /* ── Typography — Weights ───────────────────────────────── */
+  --font-regular:   400;
+  --font-medium:    500;
+  --font-semibold:  600;
+  --font-bold:      700;
+
+  /* ── Typography — Line Height / Tracking ───────────────── */
+  --leading:         1.4;
+  --tracking:        -0.02em;
+}
+
+/* ── Semantic Text Styles ──────────────────────────────────── */
+
+h1, .h1 {
+  font-family: var(--font-sans);
+  font-size: var(--text-xl);        /* 20px */
+  font-weight: var(--font-medium);
+  line-height: var(--leading);
+  letter-spacing: var(--tracking);
+  color: var(--color-text-primary);
+}
+
+h2, .h2 {
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);        /* 18px */
+  font-weight: var(--font-semibold);
+  line-height: var(--leading);
+  letter-spacing: var(--tracking);
+  color: var(--color-text-primary);
+}
+
+h3, .h3 {
+  font-family: var(--font-sans);
+  font-size: var(--text-md);        /* 16px */
+  font-weight: var(--font-semibold);
+  line-height: var(--leading);
+  letter-spacing: var(--tracking);
+  color: var(--color-text-primary);
+}
+
+h4, .h4 {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);      /* 14px */
+  font-weight: var(--font-medium);
+  line-height: var(--leading);
+  letter-spacing: var(--tracking);
+  color: var(--color-text-primary);
+}
+
+p, .body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);      /* 14px */
+  font-weight: var(--font-regular);
+  line-height: var(--leading);
+  letter-spacing: var(--tracking);
+  color: var(--color-text-primary);
+}
+
+.label {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);        /* 12px */
+  font-weight: var(--font-medium);
+  line-height: var(--leading);
+  letter-spacing: var(--tracking);
+  color: var(--color-text-secondary);
+}
+
+.caption {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);        /* 12px */
+  font-weight: var(--font-regular);
+  line-height: var(--leading);
+  letter-spacing: var(--tracking);
+  color: var(--color-text-muted);
+}
+
+code, .mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: var(--font-regular);
+  line-height: var(--leading);
+  color: var(--color-text-primary);
+}
+
+/* ── Utility ───────────────────────────────────────────────── */
+.text-primary   { color: var(--color-text-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-muted     { color: var(--color-text-muted); }
+.text-disabled  { color: var(--color-text-disabled); }
+.text-green     { color: var(--color-primary); }
+
+.bg-white       { background: var(--color-bg); }
+.bg-sidebar     { background: var(--color-bg-sidebar); }
+.bg-subtle      { background: var(--color-bg-subtle); }
+
+.border-default { border: 1px solid var(--color-border); }
+.border-mid     { border: 1px solid var(--color-border-mid); }
